@@ -14,7 +14,7 @@ import requests
 import datetime
 import hashlib
 
-import salt.modules.file
+import salt.modules.cmdmod
 import salt.utils.files
 from salt.exceptions import CommandExecutionError
 
@@ -29,7 +29,7 @@ log = logging.getLogger(__name__)
 
 # Load the __salt__ dunder if not already loaded (when called from utils-module)
 __salt__ = {
-    'file.check_perms': salt.modules.file.check_perms,
+    'cmd.run': salt.modules.cmdmod._run_quiet,
 }
 
 class FauxapiLibException(Exception):
@@ -81,8 +81,7 @@ class FauxapiLib:
             for line in fp_.readlines():
                 m = re_pattern.search(line)
                 if m:
-                    apikey = m.group(1)
-                    return apikey
+                    return m.group(1)
         raise CommandExecutionError('Unable to extract PFFA key from {0}'.format(credentials))
 
     def _get_apisecret(self, key):
@@ -104,8 +103,7 @@ class FauxapiLib:
                 else:
                     m = re_pattern.search(line)
                     if m:
-                        apisecret = m.group(1)
-                        return apikey
+                        return m.group(1)
         if not find_key:
             raise CommandExecutionError('Unable to find key {1} in {0}'.format(key, credentials))
         else:
@@ -134,11 +132,7 @@ class FauxapiLib:
             raise FauxapiLibException('unable to complete config_set() request', json.loads(res.text))
 
         # Fix chmod for file
-        __salt__['file.check_perms']('/cf/conf/config.xml',
-                                     {},
-                                     'root',
-                                     'wheel',
-                                     '644')
+        __salt__['cmd.run']('chmod 644 /cf/conf/config.xml')
 
         return json.loads(res.text)
 
