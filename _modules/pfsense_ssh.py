@@ -8,14 +8,21 @@ from __future__ import absolute_import
 import os
 import re
 import base64
+import hashlib
+import binascii
 import logging
 
 # Import Salt libs
+import salt.utils.files
+import salt.utils.stringutils
 import pfsense
 from salt.exceptions import (
     CommandExecutionError,
 )
 
+# Import 3rd-party libs
+from salt.ext import six
+from salt.ext.six.moves import range
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +31,12 @@ def __virtual__():
         return True
     else:
         return False
+
+def _get_client():
+    apikey = 'PFFA{0}'.format(__salt__['alkivi.password']('apikey', 'api', '30'))
+    apisecret = __salt__['alkivi.password']('apisecret', 'api', '64')
+    return pfsense.FauxapiLib(debug=True, apikey=apikey, apisecret=apisecret)
+
 
 def _refine_enc(enc):
     '''
@@ -137,7 +150,9 @@ def _get_user(user, config):
         return correct_user
 
 
-def auth_keys(user, config='.ssh/authorized_keys', fingerprint_hash_type=None):
+def auth_keys(user,
+              config='.ssh/authorized_keys',
+              fingerprint_hash_type=None):
     '''
     Return the authorized keys for users
 
@@ -147,9 +162,7 @@ def auth_keys(user, config='.ssh/authorized_keys', fingerprint_hash_type=None):
 
         salt '*' ssh.auth_keys root
     '''
-    apikey = 'PFFA{0}'.format(__salt__['alkivi.password']('apikey', 'api', '30'))
-    apisecret = __salt__['alkivi.password']('apisecret', 'api', '64')
-    client = pfsense.FauxapiLib(debug=True, apikey=apikey, apisecret=apisecret)
+    client = _get_client()
     config = client.config_get()
     correct_user = _get_user(user, config)
     authorizedkeys = correct_user['authorizedkeys']
@@ -172,14 +185,154 @@ def _get_config_file(user, config):
     return config
 
 
-def check_key(
+def _validate_keys(key_file, fingerprint_hash_type):
+    '''
+    Return a dict containing validated keys in the passed file
+    '''
+    ret = {}
+    linere = re.compile(r'^(.*?)\s?((?:ssh\-|ecds)[\w-]+\s.+)$')
+
+    try:
+        with salt.utils.files.fopen(key_file, 'r') as _fh:
+            for line in _fh:
+                # We don't need any whitespace-only containing lines or arbitrary doubled newlines
+                line = salt.utils.stringutils.to_unicode(line.strip())
+                if line == '':
+                    continue
+                line += '\n'
+
+                if line.startswith('#'):
+                    # Commented Line
+                    continue
+
+                # get "{options} key"
+                search = re.search(linere, line)
+                if not search:
+                    # not an auth ssh key, perhaps a blank line
+                    continue
+
+                opts = search.group(1)
+                comps = search.group(2).split()
+
+                if len(comps) < 2:
+                    # Not a valid line
+                    continue
+
+                if opts:
+                    # It has options, grab them
+                    options = opts.split(',')
+                else:
+                    options = []
+
+                enc = comps[0]
+                key = comps[1]
+                comment = ' '.join(comps[2:])
+                fingerprint = _fingerprint(key, fingerprint_hash_type)
+                if fingerprint is None:
+                    continue
+
+                ret[key] = {'enc': enc,
+                            'comment': comment,
+                            'options': options,
+                            'fingerprint': fingerprint}
+    except (IOError, OSError):
+        raise CommandExecutionError(
+            'Problem reading ssh key file {0}'.format(key_file)
+        )
+
+    return ret
+
+
+def _fingerprint(public_key, fingerprint_hash_type):
+    '''
+    Return a public key fingerprint based on its base64-encoded representation
+    The fingerprint string is formatted according to RFC 4716 (ch.4), that is,
+    in the form "xx:xx:...:xx"
+    If the key is invalid (incorrect base64 string), return None
+    public_key
+        The public key to return the fingerprint for
+    fingerprint_hash_type
+        The public key fingerprint hash type that the public key fingerprint
+        was originally hashed with. This defaults to ``sha256`` if not specified.
+        .. versionadded:: 2016.11.4
+        .. versionchanged:: 2017.7.0: default changed from ``md5`` to ``sha256``
+    '''
+    if fingerprint_hash_type:
+        hash_type = fingerprint_hash_type.lower()
+    else:
+        hash_type = 'sha256'
+
+    try:
+        hash_func = getattr(hashlib, hash_type)
+    except AttributeError:
+        raise CommandExecutionError(
+            'The fingerprint_hash_type {0} is not supported.'.format(
+                hash_type
+            )
+        )
+
+    try:
+        if six.PY2:
+            raw_key = public_key.decode('base64')
+        else:
+            raw_key = base64.b64decode(public_key, validate=True)  # pylint: disable=E1123
+    except binascii.Error:
+        return None
+
+    ret = hash_func(raw_key).hexdigest()
+
+    chunks = [ret[i:i + 2] for i in range(0, len(ret), 2)]
+    return ':'.join(chunks)
+
+
+def _replace_auth_key(
         user,
         key,
         enc='ssh-rsa',
         comment='',
         options=None,
-        config='.ssh/authorized_keys',
-        cache_keys=None):
+        config='.ssh/authorized_keys'):
+    '''
+    Replace an existing key
+    '''
+
+    auth_line = _format_auth_line(key, enc, comment, options or [])
+
+    client = _get_client()
+    config = client.config_get()
+    correct_user = _get_user(user, config)
+    authorizedkeys = correct_user['authorizedkeys']
+    keys = _decode_keys(authorizedkeys)
+
+    wanted_keys = {}
+    for present_key, data in keys.items():
+        if present_key == key:
+            wanted_keys[key] = {'enc': enc,
+                                'comment': comment,
+                                'options': options}
+        else:
+            wanted_keys[present_key] = data
+
+    to_put_keys = _encode_keys(wanted_keys)
+    correct_user['authorizedkeys'] = to_put_keys
+
+    result = client.config_set(config)
+    if 'message' not in result:
+        raise CommandExecutionError('Problem when updating ssh key')
+    elif result['message'] != 'ok':
+        logger.warning(result)
+        raise CommandExecutionError('Problem when updating ssh key')
+    return
+
+
+def check_key(user,
+              key,
+              enc='ssh-rsa',
+              comment='',
+              options=None,
+              config='.ssh/authorized_keys',
+              cache_keys=None,
+              fingerprint_hash_type=None):
     '''
     Check to see if a key needs updating, returns "update", "add" or "exists"
 
@@ -205,7 +358,47 @@ def check_key(
     return 'exists'
 
 
-def rm_auth_key(user, key):
+def check_key_file(user,
+                   source,
+                   config='.ssh/authorized_keys',
+                   saltenv='base',
+                   fingerprint_hash_type=None):
+    '''
+    Check a keyfile from a source destination against the local keys and
+    return the keys to change
+    CLI Example:
+    .. code-block:: bash
+        salt '*' ssh.check_key_file root salt://ssh/keyfile
+    '''
+    keyfile = __salt__['cp.cache_file'](source, saltenv)
+    if not keyfile:
+        return {}
+
+    s_keys = _validate_keys(keyfile, fingerprint_hash_type)
+    if not s_keys:
+        err = 'No keys detected in {0}. Is file properly ' \
+              'formatted?'.format(source)
+        log.error(err)
+        __context__['ssh_auth.error'] = err
+        return {}
+    else:
+        ret = {}
+        for key in s_keys:
+            ret[key] = check_key(
+                user,
+                key,
+                s_keys[key]['enc'],
+                s_keys[key]['comment'],
+                s_keys[key]['options'],
+                config=config,
+                fingerprint_hash_type=fingerprint_hash_type)
+        return ret
+
+
+def rm_auth_key(user,
+                key,
+                config='.ssh/authorized_keys',
+                fingerprint_hash_type=None):
     '''
     Remove an authorized key from the specified user's authorized key file
 
@@ -216,10 +409,10 @@ def rm_auth_key(user, key):
         salt '*' pfsense.rm_auth_key <user> <key>
     '''
     if check_key(user, key) == 'add':
-        pf_ret = 'Key is not present'
+        return 'Key is not present'
     else:
 
-        client = pfsense.FauxapiLib(debug=True)
+        client = _get_client()
         config = client.config_get()
         correct_user = _get_user(user, config)
         authorizedkeys = correct_user['authorizedkeys']
@@ -236,44 +429,59 @@ def rm_auth_key(user, key):
 
         to_put_keys = _encode_keys(wanted_keys)
         correct_user['authorizedkeys'] = to_put_keys
-        pf_ret = client.config_set(config)
+        ret = client.config_set(config)
+        if ret['message'] != 'ok':
+            return 'Key not removed'
+        else:
+            return 'Key removed'
 
 
-    # Now delete all to_delete_keys using normal salt command
-    salt_ret = __salt__['ssh.rm_auth_key'](user, key)
-
-    ret = {}
-    ret['fauxapi'] = pf_ret
-    ret['salt'] = salt_ret
-    return ret
-
-
-def set_auth_key(
-        user,
-        key,
-        enc='ssh-rsa',
-        comment='',
-        options=None,
-        config='.ssh/authorized_keys',
-        cache_keys=None):
+def set_auth_key(user,
+                 key,
+                 enc='ssh-rsa',
+                 comment='',
+                 options=None,
+                 config='.ssh/authorized_keys',
+                 cache_keys=None,
+                 fingerprint_hash_type=None):
     '''
     Add a key to the authorized_keys file. The "key" parameter must only be the
     string of text that is the encoded key. If the key begins with "ssh-rsa"
     or ends with user@host, remove those from the key before passing it to this
     function.
-
-
     CLI Example:
-
     .. code-block:: bash
-
-        salt '*' ssh.set_auth_key <user> '<key>'
+        salt '*' ssh.set_auth_key <user> '<key>' enc='dsa'
     '''
-    status = check_key(user, key)
-    if status != 'add':
-        return 'Cannot add key, because it has status {0}'.format(status)
+    if len(key.split()) > 1:
+        return 'invalid'
 
-    client = pfsense.FauxapiLib(debug=True)
+    enc = _refine_enc(enc)
+
+    # A 'valid key' to us pretty much means 'decodable as base64', which is
+    # the same filtering done when reading the authorized_keys file. Apply
+    # the same check to ensure we don't insert anything that will not
+    # subsequently be read)
+    key_is_valid = _fingerprint(key, fingerprint_hash_type) is not None
+    if not key_is_valid:
+        return 'Invalid public key'
+
+    status = check_key(user,
+		       key,
+                       enc,
+                       comment,
+                       options,
+                       config=config,
+                       cache_keys=cache_keys,
+                       fingerprint_hash_type=fingerprint_hash_type)
+
+    if status == 'update':
+        _replace_auth_key(user, key, enc, comment, options or [], config)
+        return 'replace'
+    elif status == 'exists':
+        return 'no change'
+
+    client = _get_client()
     config = client.config_get()
     correct_user = _get_user(user, config)
     authorizedkeys = correct_user['authorizedkeys']
@@ -287,93 +495,114 @@ def set_auth_key(
     to_put_keys = _encode_keys(keys)
     correct_user['authorizedkeys'] = to_put_keys
 
-    ret = {}
-
     result = client.config_set(config)
-    if 'message' in result:
-        ret['fauxapi'] = result['message']
-    else:
-        return result
-
-    # Now delete all to_delete_keys using normal salt command
-    ret['salt'] = __salt__['ssh.set_auth_key'](user=user,
-                                               key=key,
-                                               enc=enc,
-                                               comment=comment,
-                                               options=options)
-                                               
-    return ret
+    if 'message' not in result:
+        raise CommandExecutionError('Problem when updating ssh key')
+    elif result['message'] != 'ok':
+        logger.warning(result)
+        raise CommandExecutionError('Problem when updating ssh key')
+    return 'new'
 
 
-def add_user(name,
-             uid=None,
-             gid=None,
-             groups=None,
-             home=None,
-             shell=None,
-             unique=True,
-             system=False,
-             fullname='',
-             roomnumber='',
-             workphone='',
-             homephone='',
-             createhome=True,
-             loginclass=None,
-             root=None):
+def set_auth_key_from_file(user,
+                           source,
+                           config='.ssh/authorized_keys',
+                           saltenv='base',
+                           fingerprint_hash_type=None):
     '''
-    Add a user to the minion
-
+    Add a key to the authorized_keys file, using a file as the source.
     CLI Example:
-
     .. code-block:: bash
-
-        salt '*' user.add name <uid> <gid> <groups> <home> <shell>
+        salt '*' ssh.set_auth_key_from_file <user> salt://ssh_keys/<user>.id_rsa.pub
     '''
-    client = pfsense.FauxapiLib(debug=True)
-    config = client.config_get()
-    users = config['system']['user']
-    for user in users:
-        if user['name'] == name:
-            return 'Already present'
+    # TODO: add support for pulling keys from other file sources as well
+    lfile = __salt__['cp.cache_file'](source, saltenv)
+    if not os.path.isfile(lfile):
+        raise CommandExecutionError(
+            'Failed to pull key file from salt file server'
+        )
 
-    # Call salt command to create
-    res = __salt__['user.add'](name, fullname=fullname, gid='nobody', shell='/sbin/nologin')
-    if not res:
-        return res
-    infos = __salt__['user.info'](name)
-
-    # Then update config
-    user_data = {
-            'uid': infos['uid'],
-            'dashboardcolumns': 2,
-            'descr': fullname,
-            'name': name,
-            'disabled': True,
-            'authorizedkeys': True,
-            'ipsecpsk': True,
-            'expires': True,
-            'bcrypt-hash': '*',
-            'scope': 'user',
-            'webguicss': 'pfSense.css'}
-    users.append(user_data)
-    config['system']['nextuid'] = infos['uid'] + 1
-
-    ret = {'salt': infos}
-
-    result = client.config_set(config)
-    if 'message' in result:
-        ret['fauxapi'] = result['message']
+    s_keys = _validate_keys(lfile, fingerprint_hash_type)
+    if not s_keys:
+        err = (
+            'No keys detected in {0}. Is file properly formatted?'.format(
+                source
+            )
+        )
+        log.error(err)
+        __context__['ssh_auth.error'] = err
+        return 'fail'
     else:
-        return result
+        rval = ''
+        for key in s_keys:
+            rval += set_auth_key(
+                user,
+                key,
+                enc=s_keys[key]['enc'],
+                comment=s_keys[key]['comment'],
+                options=s_keys[key]['options'],
+                config=config,
+                cache_keys=list(s_keys.keys()),
+                fingerprint_hash_type=fingerprint_hash_type
+            )
+        # Due to the ability for a single file to have multiple keys, it's
+        # possible for a single call to this function to have both "replace"
+        # and "new" as possible valid returns. I ordered the following as I
+        # thought best.
+        if 'fail' in rval:
+            return 'fail'
+        elif 'replace' in rval:
+            return 'replace'
+        elif 'new' in rval:
+            return 'new'
+        else:
+            return 'no change'
 
 
-def delete_user(name, remove=False, force=False, root=None):
+def rm_auth_key_from_file(user,
+                          source,
+                          config='.ssh/authorized_keys',
+                          saltenv='base',
+                          fingerprint_hash_type=None):
     '''
-    Remove a user from the minion
-
+    Remove an authorized key from the specified user's authorized key file,
+    using a file as source
     CLI Example:
-
     .. code-block:: bash
-
-        salt '*' user.delete name remove=True force=True
+        salt '*' ssh.rm_auth_key_from_file <user> salt://ssh_keys/<user>.id_rsa.pub
     '''
+    lfile = __salt__['cp.cache_file'](source, saltenv)
+    if not os.path.isfile(lfile):
+        raise CommandExecutionError(
+            'Failed to pull key file from salt file server'
+        )
+
+    s_keys = _validate_keys(lfile, fingerprint_hash_type)
+    if not s_keys:
+        err = (
+            'No keys detected in {0}. Is file properly formatted?'.format(
+                source
+            )
+        )
+        log.error(err)
+        __context__['ssh_auth.error'] = err
+        return 'fail'
+    else:
+        rval = ''
+        for key in s_keys:
+            rval += rm_auth_key(
+                user,
+                key,
+                config=config,
+                fingerprint_hash_type=fingerprint_hash_type
+            )
+        # Due to the ability for a single file to have multiple keys, it's
+        # possible for a single call to this function to have both "replace"
+        # and "new" as possible valid returns. I ordered the following as I
+        # thought best.
+        if 'Key not removed' in rval:
+            return 'Key not removed'
+        elif 'Key removed' in rval:
+            return 'Key removed'
+        else:
+            return 'Key not present'
