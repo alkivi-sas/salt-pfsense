@@ -6,6 +6,7 @@ from __future__ import absolute_import
 
 # Import Python libs
 import os
+import re
 import json
 import base64
 import logging
@@ -14,6 +15,8 @@ import datetime
 import hashlib
 
 import salt.modules.file
+import salt.utils.files
+from salt.exceptions import CommandExecutionError
 
 try:
     from urllib.parse import urlencode
@@ -47,10 +50,10 @@ class FauxapiLib:
         if not host:
             host = FAUXAPI_HOST
         if not apikey:
-            apikey = 'PFFA'
+            apikey = self._get_apikey()
 		
         if not apisecret:
-            apisecret = 'test'
+            apisecret = self._get_apisecret(apikey)
 
         self.proto = 'https'
         self.base_url = 'fauxapi/v1'
@@ -61,6 +64,52 @@ class FauxapiLib:
         self.debug = debug
         if not self.use_verified_https:
             requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
+
+
+    def _get_apikey(self):
+        '''
+        Parse /etc/fauxapi/credentials.ini
+
+        Return the first line that match [PFFA 12 to 40 characters]
+        '''
+        credentials = '/etc/fauxapi/credentials.ini'
+        if not os.path.isfile(credentials):
+            raise CommandExecutionError('You must create {0} first'.format(credentials))
+
+        re_pattern = re.compile('^\[(PFFA[A-Za-z0-9]{8,36})\]$')
+        with salt.utils.files.fopen(credentials, 'r') as fp_:
+            for line in fp_.readlines():
+                m = re_pattern.search(line)
+                if m:
+                    apikey = m.group(1)
+                    return apikey
+        raise CommandExecutionError('Unable to extract PFFA key from {0}'.format(credentials))
+
+    def _get_apisecret(self, key):
+        '''Parse /etc/fauxapi/credentials.ini.
+        
+        Return the first line with secret avec key has been found
+        '''
+        credentials = '/etc/fauxapi/credentials.ini'
+        if not os.path.isfile(credentials):
+            raise CommandExecutionError('You must create {0} first'.format(credentials))
+
+        re_pattern = re.compile('^secret\s=\s(.*)$')
+        find_key = False
+        with salt.utils.files.fopen(credentials, 'r') as fp_:
+            for line in fp_.readlines():
+                if not find_key:
+                    if key in line:
+                        find_key = True
+                else:
+                    m = re_pattern.search(line)
+                    if m:
+                        apisecret = m.group(1)
+                        return apikey
+        if not find_key:
+            raise CommandExecutionError('Unable to find key {1} in {0}'.format(key, credentials))
+        else:
+            raise CommandExecutionError('Unable to extract secret associated to key {1} in {0}'.format(key, credentials))
 
     def config_get(self, section=None):
         res = self._api_request('GET', 'config_get')

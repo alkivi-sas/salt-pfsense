@@ -61,7 +61,7 @@ def _present_test(user, name, enc, comment, options, source, config, fingerprint
     '''
     result = None
     if source:
-        keys = __salt__['ssh.check_key_file'](
+        keys = __salt__['pfsense_ssh.check_key_file'](
                 user,
                 source,
                 config,
@@ -106,7 +106,7 @@ def _present_test(user, name, enc, comment, options, source, config, fingerprint
             if len(comps) == 3:
                 comment = comps[2]
 
-    check = __salt__['pfsense.check_key'](
+    check = __salt__['pfsense_ssh.check_key'](
             user,
             name,
             enc,
@@ -136,7 +136,7 @@ def _absent_test(user, name, enc, comment, options, source, config, fingerprint_
     '''
     result = None
     if source:
-        keys = __salt__['ssh.check_key_file'](
+        keys = __salt__['pfsense_ssh.check_key_file'](
                 user,
                 source,
                 config,
@@ -181,7 +181,7 @@ def _absent_test(user, name, enc, comment, options, source, config, fingerprint_
             if len(comps) == 3:
                 comment = comps[2]
 
-    check = __salt__['pfsense.check_key'](
+    check = __salt__['pfsense_ssh.check_key'](
             user,
             name,
             enc,
@@ -318,7 +318,7 @@ def present(
         for keyline in key:
             filehasoptions = sshre.match(keyline)
             if not filehasoptions:
-                data = __salt__['ssh.set_auth_key_from_file'](
+                data = __salt__['pfsense_ssh.set_auth_key_from_file'](
                         user,
                         source,
                         config=config,
@@ -330,7 +330,7 @@ def present(
                 key_type = keyline[0]
                 key_value = keyline[1]
                 key_comment = keyline[2] if len(keyline) > 2 else ''
-                data = __salt__['pfsense.set_auth_key'](
+                data = __salt__['pfsense_ssh.set_auth_key'](
                         user,
                         key_value,
                         enc=key_type,
@@ -339,7 +339,7 @@ def present(
                         config=config,
                         fingerprint_hash_type=fingerprint_hash_type)
     else:
-        data = __salt__['pfsense.set_auth_key'](
+        data = __salt__['pfsense_ssh.set_auth_key'](
                 user,
                 name,
                 enc=enc,
@@ -462,18 +462,18 @@ def absent(name,
         for keyline in key:
             filehasoptions = sshre.match(keyline)
             if not filehasoptions:
-                ret['comment'] = __salt__['ssh.rm_auth_key_from_file'](user,
-                                                                       source,
-                                                                       config,
-                                                                       saltenv=__env__,
-                                                                       fingerprint_hash_type=fingerprint_hash_type)
+                ret['comment'] = __salt__['pfsense_ssh.rm_auth_key_from_file'](user,
+                                                                               source,
+                                                                               config,
+                                                                               saltenv=__env__,
+                                                                               fingerprint_hash_type=fingerprint_hash_type)
             else:
                 # Split keyline to get key
                 keyline = keyline.split(' ')
-                ret['comment'] = __salt__['pfsense.rm_auth_key'](user,
-                                                             keyline[1],
-                                                             config=config,
-                                                             fingerprint_hash_type=fingerprint_hash_type)
+                ret['comment'] = __salt__['pfsense_ssh.rm_auth_key'](user,
+                                                                     keyline[1],
+                                                                     config=config,
+                                                                     fingerprint_hash_type=fingerprint_hash_type)
     else:
         # Get just the key
         sshre = re.compile(r'^(.*?)\s?((?:ssh\-|ecds)[\w-]+\s.+)$')
@@ -494,10 +494,10 @@ def absent(name,
             name = comps[1]
             if len(comps) == 3:
                 comment = comps[2]
-        ret['comment'] = __salt__['pfsense.rm_auth_key'](user,
-                                                     name,
-                                                     config=config,
-                                                     fingerprint_hash_type=fingerprint_hash_type)
+        ret['comment'] = __salt__['pfsense_ssh.rm_auth_key'](user,
+                                                             name,
+                                                             config=config,
+                                                             fingerprint_hash_type=fingerprint_hash_type)
 
     if ret['comment'] == 'User authorized keys file not present':
         ret['result'] = False

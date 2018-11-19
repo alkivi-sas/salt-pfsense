@@ -27,15 +27,13 @@ from salt.ext.six.moves import range
 logger = logging.getLogger(__name__)
 
 def __virtual__():
-    if __salt__['file.file_exists']('/etc/pf.os'):
+    if os.path.isfile('/etc/pf.os'):
         return True
     else:
         return False
 
 def _get_client():
-    apikey = 'PFFA{0}'.format(__salt__['alkivi.password']('apikey', 'api', '30'))
-    apisecret = __salt__['alkivi.password']('apisecret', 'api', '64')
-    return pfsense.FauxapiLib(debug=True, apikey=apikey, apisecret=apisecret)
+    return pfsense.FauxapiLib(debug=True)
 
 
 def _refine_enc(enc):
