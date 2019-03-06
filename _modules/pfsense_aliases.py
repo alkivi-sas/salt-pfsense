@@ -143,6 +143,8 @@ def set_target(alias, target, type=None, descr=None, detail=None):
                 current_alias['descr'] = descr
             if detail:
                 current_alias['detail'] = detail
+            if type and type != current_alias['type']:
+                raise CommandExecutionError('You ask for type {0} but already present as {1}'.format(type, current_alias['type']))
         new_aliases.append(current_alias)
 
     if to_add:
