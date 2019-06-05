@@ -110,11 +110,7 @@ class FauxapiLib:
             raise CommandExecutionError('Unable to extract secret associated to key {1} in {0}'.format(key, credentials))
 
     def config_get(self, section=None):
-        res = self._api_request('GET', 'config_get')
-        if res.status_code != 200:
-            raise FauxapiLibException('unable to complete config_get() request', json.loads(res.text))
-        else:
-            config = json.loads(res.text)
+        config = self._api_request('GET', 'config_get')
         if section is None:
             return config['data']['config']
         elif section in config['data']['config']:
@@ -128,79 +124,80 @@ class FauxapiLib:
             config = self.config_get(section=None)
             config[section] = config_user
         res = self._api_request('POST', 'config_set', data=json.dumps(config))
-        if res.status_code != 200:
-            raise FauxapiLibException('unable to complete config_set() request', json.loads(res.text))
 
         # Fix chmod for file
         __salt__['cmd.run']('chmod 644 /cf/conf/config.xml')
 
-        return json.loads(res.text)
+        return res
+
+    def config_patch(self, config):
+        return self._api_request('POST', 'config_patch', data=json.dumps(config))
 
     def config_reload(self):
-        res = self._api_request('GET', 'config_reload')
-        if res.status_code != 200:
-            raise FauxapiLibException('unable to complete config_reload() request', json.loads(res.text))
-        return json.loads(res.text)
+        return self._api_request('GET', 'config_reload')
 
     def config_backup(self):
-        res = self._api_request('GET', 'config_backup')
-        if res.status_code != 200:
-            raise FauxapiLibException('unable to complete system_reboot() request', json.loads(res.text))
-        return json.loads(res.text)
+        return self._api_request('GET', 'config_backup')
 
     def config_backup_list(self):
-        res = self._api_request('GET', 'config_backup_list')
-        if res.status_code != 200:
-            raise FauxapiLibException('unable to complete config_backup_list() request', json.loads(res.text))
-        return json.loads(res.text)
+        return self._api_request('GET', 'config_backup_list')
 
     def config_restore(self, config_file):
-        res = self._api_request('GET', 'config_restore', params={'config_file': config_file})
-        if res.status_code != 200:
-            raise FauxapiLibException('unable to complete config_restore() request', json.loads(res.text))
-        return json.loads(res.text)
+        return self._api_request('GET', 'config_restore', params={'config_file': config_file})
 
     def send_event(self, command):
-        res = self._api_request('POST', 'send_event', data=json.dumps([command]))
-        if res.status_code != 200:
-            raise FauxapiLibException('unable to complete send_event() request', json.loads(res.text))
-        return json.loads(res.text)
+        return self._api_request('POST', 'send_event', data=json.dumps([command]))
 
     def system_reboot(self):
-        res = self._api_request('GET', 'system_reboot')
-        if res.status_code != 200:
-            raise FauxapiLibException('unable to complete system_reboot() request', json.loads(res.text))
-        return json.loads(res.text)
+        return self._api_request('GET', 'system_reboot')
 
     def system_stats(self):
-        res = self._api_request('GET', 'system_stats')
-        if res.status_code != 200:
-            raise FauxapiLibException('unable to complete system_stats() request', json.loads(res.text))
-        return json.loads(res.text)
+        return self._api_request('GET', 'system_stats')
+
+    def gateway_status(self):
+        return self._api_request('GET', 'gateway_status')
 
     def rule_get(self, rule_number=None):
-        res = self._api_request('GET', 'rule_get', params={'rule_number': rule_number})
-        if res.status_code != 200:
-            raise FauxapiLibException('unable to complete rule_get() request', json.loads(res.text))
-        return json.loads(res.text)
+        return self._api_request('GET', 'rule_get', params={'rule_number': rule_number})
 
-    def _api_request(self, method, action, params={}, data=None):
+    def alias_update_urltables(self, table=None):
+        if table is not None:
+            return self._api_request('GET', 'alias_update_urltables', params={'table': table})
+        return self._api_request('GET', 'alias_update_urltables')
+
+    def function_call(self, data):
+        return self._api_request('POST', 'function_call', data=json.dumps(data))
+
+    def _api_request(self, method, action, params=None, data=None):
+        if params is None:
+            params = {}
+
         if self.debug:
             params['__debug'] = 'true'
+
         url = '{proto}://{host}/{base_url}/?action={action}&{params}'.format(
             proto=self.proto, host=self.host, base_url=self.base_url, action=action, params=urlencode(params))
+
         if method.upper() == 'GET':
-            return requests.get(url,
+            res = requests.get(url,
                 headers={'fauxapi-auth': self._generate_auth()},
                 verify=self.use_verified_https
             )
         elif method.upper() == 'POST':
-            return requests.post(url,
+            res = requests.post(url,
                 headers={'fauxapi-auth': self._generate_auth()},
                 verify=self.use_verified_https,
                 data=data
             )
-        raise FauxapiLibException('request method not supported!', method)
+        else:
+            raise FauxapiLibException('request method not supported!', method)
+
+        if res.status_code == 404:
+            raise FauxapiLibException('Unable to find FauxAPI on target host, is it installed?')
+        elif res.status_code != 200:
+            raise FauxapiLibException('Unable to complete {}() request'.format(action), json.loads(res.text))
+
+        return self._json_parse(res.text)
 
     def _generate_auth(self):
         # auth = apikey:timestamp:nonce:HASH(apisecret:timestamp:nonce)
@@ -208,3 +205,11 @@ class FauxapiLib:
         timestamp = datetime.datetime.utcnow().strftime('%Y%m%dZ%H%M%S')
         hash = hashlib.sha256('{}{}{}'.format(self.apisecret, timestamp, nonce).encode('utf-8')).hexdigest()
         return '{}:{}:{}:{}'.format(self.apikey, timestamp, nonce, hash)
+
+    def _json_parse(self, data):
+	try:
+	    return json.loads(data)
+	except json.JSONDecodeError:
+	    pass
+	raise PfsenseFauxapiException('Unable to parse response data!', data)
+
