@@ -26,19 +26,19 @@ def present(
     if isinstance(target, list):
         targets = target
 
-    is_present = __salt__['pfsense_aliases.get_target'](name)
+    is_present = __salt__['pfsense_alias.get_target'](name)
     if __opts__['test']:
         if not is_present:
             ret['comment'] = 'Alias is set to be created'
             return ret
-        is_ok = __salt__['pfsense_aliases.has_target'](name, target)
+        is_ok = __salt__['pfsense_alias.has_target'](name, target)
         if is_ok:
             ret['comment'] = 'Alias is already OK'
         else:
             ret['comment'] = 'Alias is set to be updated'
         return ret
 
-    data = __salt__['pfsense_aliases.set_target'](
+    data = __salt__['pfsense_alias.set_target'](
             name,
             target,
             type=type,
@@ -47,7 +47,7 @@ def present(
 
     real_targets = ' '.join(targets)
     if is_present: 
-        is_ok = __salt__['pfsense_aliases.has_target'](name, target)
+        is_ok = __salt__['pfsense_alias.has_target'](name, target)
         if is_ok:
             ret['comment'] = ('Alias {0} was already OK'.format(name))
         else:
@@ -65,7 +65,7 @@ def absent(name):
            'result': True,
            'comment': ''}
 
-    is_present = __salt__['pfsense_aliases.get_target'](name)
+    is_present = __salt__['pfsense_alias.get_target'](name)
     if __opts__['test']:
         if not is_present:
             ret['comment'] = 'Alias is not present'
@@ -73,7 +73,7 @@ def absent(name):
             ret['comment'] = 'Alias set to be removed'
         return ret
 
-    data = __salt__['pfsense_aliases.rm_alias'](name)
+    data = __salt__['pfsense_alias.rm_alias'](name)
 
     if is_present: 
         ret['changes'][name] = 'Removed'
