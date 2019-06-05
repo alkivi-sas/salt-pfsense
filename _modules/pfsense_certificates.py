@@ -194,6 +194,9 @@ def list_cert(all_data=False):
         return ret
 
     for cert in config['cert']:
+        if 'descr' not in cert:
+            continue
+
         if all_data:
             data = cert
         else:
