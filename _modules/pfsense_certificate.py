@@ -121,7 +121,7 @@ def add_cert_to_crl(crlid, certid, reason=5):
         return 'Revocation OK'
 
 
-def revoke_user_certificate(user, crlid=None):
+def revoke_user_certificate(user, crlid=None, certid=None):
     """
     Revoke a user certificate
 
@@ -130,10 +130,16 @@ def revoke_user_certificate(user, crlid=None):
     """
     certs = list_cert()
     found_certid = None
-    for certid, data in certs.items():
+    for foundcert_id, data in certs.items():
         if data['descr'].lower() == user:
-            found_certid = certid
+            found_certid = foundcert_id
             break
+
+    if certid:
+        if certid not in certs:
+            raise CommandExecutionError('no certificate with id {0}'.format(certid))
+        else:
+            found_certid = certid
 
     if not found_certid:
         raise CommandExecutionError('no certificate found with name {0}'.format(user))
