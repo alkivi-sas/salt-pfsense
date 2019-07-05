@@ -122,7 +122,7 @@ def set_static_map(interface, mac, ipaddr, hostname, **kwargs):
     }
 
     for key in keys_to_check:
-        if key in kwargs:
+        if key in kwargs and kwargs[key] is not None:
             wanted_data[key] = kwargs[key]
 
     _check_interface(interface)
