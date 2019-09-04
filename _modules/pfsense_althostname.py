@@ -47,7 +47,10 @@ def list_hostnames():
     client = _get_client()
     config = client.config_get()
 
-    return config['system']['webgui']['althostnames'].split(' ')
+    if 'althostnames' not in config['system']['webgui']:
+        return []
+    else:
+        return config['system']['webgui']['althostnames'].split(' ')
 
 
 def has_hostname(hostname):
