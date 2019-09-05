@@ -49,6 +49,9 @@ def list_aliases():
     config = client.config_get()
 
     ret = {}
+    if 'alias' not in config['aliases']:
+        return ret
+
     for alias in config['aliases']['alias']:
         addresses = alias['address'].split(' ')
         alias['addresses'] = addresses
@@ -135,17 +138,18 @@ def set_target(alias, target, type=None, descr=None, detail=None):
 
     new_aliases = []
     to_add = True
-    for current_alias in config['aliases']['alias']:
-        if current_alias['name'] == alias:
-            to_add = False
-            current_alias['address'] = ' '.join(targets)
-            if descr:
-                current_alias['descr'] = descr
-            if detail:
-                current_alias['detail'] = detail
-            if type and type != current_alias['type']:
-                raise CommandExecutionError('You ask for type {0} but already present as {1}'.format(type, current_alias['type']))
-        new_aliases.append(current_alias)
+    if 'alias' in config['aliases']:
+        for current_alias in config['aliases']['alias']:
+            if current_alias['name'] == alias:
+                to_add = False
+                current_alias['address'] = ' '.join(targets)
+                if descr:
+                    current_alias['descr'] = descr
+                if detail:
+                    current_alias['detail'] = detail
+                if type and type != current_alias['type']:
+                    raise CommandExecutionError('You ask for type {0} but already present as {1}'.format(type, current_alias['type']))
+            new_aliases.append(current_alias)
 
     if to_add:
         if type not in ['port', 'network', 'host']:
@@ -161,7 +165,10 @@ def set_target(alias, target, type=None, descr=None, detail=None):
             new_alias['detail'] = detail
         new_aliases.append(new_alias)
 
-    config['aliases']['alias'] = new_aliases
+    if 'alias' not in config['aliases']:
+        config['aliases'] = {'alias': new_aliases}
+    else:
+        config['aliases']['alias'] = new_aliases
     result = client.config_set(config)
 
     if 'message' not in result:
