@@ -66,6 +66,24 @@ def list_interfaces():
     return ret
 
 
+def list_wan_interfaces():
+    '''
+    Return the list of wan interfaces.
+    Wan interfaces are interface with gateway or pppoe
+    CLI Example:
+    .. code-block:: bash
+        salt '*' pfsense_interface.list_interfaces
+    '''
+    interfaces = list_interfaces()
+    wan_interfaces = {}
+    for interface, data in interfaces.items():
+        if 'gateway' in data:
+            wan_interfaces[interface] = data
+        elif 'ipaddr' in data and data['ipaddr'] == 'pppoe':
+            wan_interfaces[interface] = data
+    return wan_interfaces
+
+
 def get_interface(interface):
     '''
     Return the target associated with an interface
