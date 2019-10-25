@@ -91,16 +91,16 @@ def present(name,
     }
 
     # check kwargs and install default if needed
-    for key, key_data in keys.items():
+    for key, key_data in KEYS.items():
         key_type = key_data['type']
         key_default = key_data['default']
 
-        if key in kwargs and kwargs[key] is not none:
+        if key in kwargs and kwargs[key] is not None:
             if key_type == 'boolean':
                 wanted_data[key] = ''
             else:
                 wanted_data[key] = str(kwargs[key])
-        elif key_default is not none:
+        elif key_default is not None:
             if key_type == 'boolean' and key_default:
                 wanted_data[key] = ''
             else:
@@ -122,6 +122,7 @@ def present(name,
             interface,
             ifname=ifname,
             ipaddr=ipaddr,
+            subnet=subnet,
             descr=descr,
             **kwargs)
 
