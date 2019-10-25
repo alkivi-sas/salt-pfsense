@@ -172,7 +172,7 @@ def has_interface(interface):
         return True
 
 
-def need_changes(interface, wanted_data):
+def need_changes(interface):
     '''
     Return a list of key that need updates
     CLI Example:
@@ -232,17 +232,17 @@ def set_interface(interface,
         'descr': descr,
     }
 
-    # Check kwargs and install default if needed
-    for key, key_data in KEYS.items():
+    # check kwargs and install default if needed
+    for key, key_data in keys.items():
         key_type = key_data['type']
         key_default = key_data['default']
 
-        if key in kwargs and kwargs[key] is not None:
+        if key in kwargs and kwargs[key] is not none:
             if key_type == 'boolean':
                 wanted_data[key] = ''
             else:
                 wanted_data[key] = str(kwargs[key])
-        elif key_default is not None:
+        elif key_default is not none:
             if key_type == 'boolean' and key_default:
                 wanted_data[key] = ''
             else:
