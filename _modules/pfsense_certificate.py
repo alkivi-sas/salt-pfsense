@@ -224,3 +224,24 @@ def get_cert(refid, all_data=False):
         raise CommandExecutionError('cert with id {0} not found'.format(refid))
     else:
         return certs[refid]
+
+
+def list_cert_with_status():
+    """Return a dict with certs."""
+
+    client = _get_client()
+    config = client.config_get()
+
+    users_certificates = {}
+    for user in config['system']['user']:
+        uid = user['uid']
+        cert = user.get('cert', None)
+        if cert:
+            users_certificates[cert] = dict(user)
+    return users_certificates
+
+    certs = list_cert(all_data=True)
+    crl = list_crl(all_data=True)
+
+    test = {'users': users_certificates, 'certs':certs, 'crl': crl}
+    return test
