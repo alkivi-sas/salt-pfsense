@@ -46,13 +46,23 @@ def list_users():
 	del(response_data[user['name']]['name'])
     return response_data
 
-def add_user(username):
+
+def get_user(username):
+    user_index, user = _get_entity('user', username)
+    if user_index is None:
+        return None
+    return user
+
+
+def add_user(username, attributes={}):
     client = _get_client()
     config = client.config_get()
 
     user_index, user = _get_entity('user', username)
     if user_index is not None:
 	raise CommandExecutionError('user {0} already exists'.format(username))
+
+    valid_attributes = ['password','descr','expires','dashboardcolumns','authorizedkeys','ipsecpsk','webguicss','disabled','priv']
 
     user = {
 	'scope': 'user',
@@ -67,16 +77,34 @@ def add_user(username):
 	'uid': _get_next_id('uid'),
     }
 
+    for attribute, value in attributes.items():
+	if attribute not in valid_attributes:
+	    raise CommandExecutionError('unsupported attribute type', attribute)
+
+	if attribute == 'disabled':
+	    if value is True:
+		user[attribute] = ''
+	    else:
+		if attribute in user:
+		    del(user[attribute])
+	elif attribute == 'password':
+	    user['bcrypt-hash'] = bcrypt.hashpw(value.encode('utf8'), bcrypt.gensalt()).decode('utf8')
+	else:
+	    if len(value) == 0 and attribute in user:
+		del(user[attribute])
+	    elif len(value) > 0:
+		user[attribute] = value
+
     patch_system_user = {
-	'system': {
-	    'user': config['system']['user']
-	}
+        'system': {
+            'user': config['system']['user']
+        }
     }
     patch_system_user['system']['user'].append(user)
 
     response = client.config_patch(patch_system_user)
     if response['message'] != 'ok':
-	raise CommandExecutionError('unable to add user', response['message'])
+        raise CommandExecutionError('unable to add user', response['message'])
 
     _increment_next_id('uid')
 
@@ -145,7 +173,7 @@ def remove_user(username):
     if response['message'] != 'ok':
 	raise CommandExecutionError('unable to remove user', response['message'])
 
-    return user
+    return True
 
 # group functions
 # =========================================================================
