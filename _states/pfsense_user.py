@@ -129,5 +129,4 @@ def absent(name):
 
     user = __salt__['pfsense_user.remove_user'](name)
     ret['comment'] = 'User {0} was removed'.format(name)
-    ret['changes'] = 'User {0} was removed'.format(name)
     return ret

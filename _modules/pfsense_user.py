@@ -88,7 +88,7 @@ def add_user(username, attributes={}):
 		if attribute in user:
 		    del(user[attribute])
 	elif attribute == 'password':
-	    user['bcrypt-hash'] = bcrypt.hashpw(value.encode('utf8'), bcrypt.gensalt()).decode('utf8')
+	    user['bcrypt-hash'] = 'todo'
 	else:
 	    if len(value) == 0 and attribute in user:
 		del(user[attribute])
@@ -107,6 +107,23 @@ def add_user(username, attributes={}):
         raise CommandExecutionError('unable to add user', response['message'])
 
     _increment_next_id('uid')
+
+    uid = int(user['uid'])
+    shell = '/sbin/tcsh'
+    if 'disabled' in user:
+        shell = '/sbin/nologin'
+    fullname = user['descr']
+    createhome=False
+    gid=65534
+    system_user = __salt__['user.add'](username, uid=uid, gid=gid, shell=shell, fullname=fullname, createhome=createhome)
+    logger.warning('system_user')
+    logger.warning(system_user)
+
+    #if 'password' in attributes:
+    #    wanted_hash = user['bcrypt-hash']
+    #    system_user = __salt__['shadow.set_password'](username, wanted_hash)
+    #    logger.warning('system_user hash')
+    #    logger.warning(system_user)
 
     return user
 
@@ -134,7 +151,7 @@ def manage_user(username, attributes):
 		if attribute in user:
 		    del(user[attribute])
 	elif attribute == 'password':
-	    user['bcrypt-hash'] = bcrypt.hashpw(value.encode('utf8'), bcrypt.gensalt()).decode('utf8')
+	    user['bcrypt-hash'] = 'toto'
 	else:
 	    if len(value) == 0 and attribute in user:
 		del(user[attribute])
@@ -151,6 +168,27 @@ def manage_user(username, attributes):
     response = client.config_patch(patch_system_user)
     if response['message'] != 'ok':
 	raise CommandExecutionError('unable to manage user', response['message'])
+
+    if 'descr' in attributes:
+        descr = attributes['descr']
+        system_user = __salt__['user.chfullname'](username, descr)
+        logger.warning('system_user descr')
+        logger.warning(system_user)
+
+    if 'disabled' in attributes:
+        disabled = attributes['disabled']
+        if disabled:
+            system_user = __salt__['user.chshell'](username, '/sbin/nologin')
+        else:
+            system_user = __salt__['user.chshell'](username, '/sbin/tcsh')
+        logger.warning('system_user descr')
+        logger.warning(system_user)
+
+    #if 'password' in attributes:
+    #    wanted_hash = user['bcrypt-hash']
+    #    system_user = __salt__['shadow.set_password'](username, wanted_hash)
+    #    logger.warning('system_user hash')
+    #    logger.warning(system_user)
 
     return user
 
@@ -172,6 +210,10 @@ def remove_user(username):
     response = client.config_patch(patch_system_user)
     if response['message'] != 'ok':
 	raise CommandExecutionError('unable to remove user', response['message'])
+
+    system_user = __salt__['user.delete'](username, remove=True, force=True)
+    logger.warning('system_user')
+    logger.warning(system_user)
 
     return True
 
