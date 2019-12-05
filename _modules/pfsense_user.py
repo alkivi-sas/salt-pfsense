@@ -192,6 +192,32 @@ def manage_user(username, attributes):
 
     return user
 
+def add_cert(username, refid):
+    """Add a certificate to a user."""
+    client = _get_client()
+    config = client.config_get()
+
+    user_index, user = _get_entity('user', username)
+    if user_index is None:
+	raise CommandExecutionError('user {0} does not exist'.format(username))
+
+    if 'cert' in user:
+        user['cert'].append(refid)
+    else:
+        user['cert'] = [refid]
+
+    patch_system_user = {
+	'system': {
+	    'user': config['system']['user']
+	}
+    }
+    patch_system_user['system']['user'][user_index] = user
+
+    response = client.config_patch(patch_system_user)
+    if response['message'] != 'ok':
+	raise CommandExecutionError('unable to manage user', response['message'])
+    return True
+
 def remove_user(username):
     client = _get_client()
     config = client.config_get()
