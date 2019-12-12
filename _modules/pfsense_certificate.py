@@ -312,6 +312,23 @@ def get_cert(refid, all_data=False):
     return certs[refid]
 
 
+def get_cert_index(refid):
+    """Return index of a cert, needed for openvpn."""
+    client = _get_client()
+    config = client.config_get()
+
+    index = 0
+    if 'cert' not in config:
+        return None
+
+    for cert in config['cert']:
+	if cert['refid'] == refid:
+            return index
+	index += 1
+
+    return None
+
+
 def list_cert_with_status():
     """Return a dict with certs."""
 

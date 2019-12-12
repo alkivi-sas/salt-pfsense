@@ -218,6 +218,73 @@ def add_cert(username, refid):
 	raise CommandExecutionError('unable to manage user', response['message'])
     return True
 
+
+def export_openvpn_config(username, addr, vpnid=None, caref=None, conf_type='confzip'):
+    """Export localy in /tmp a openvpn file."""
+
+    # Check username exists
+    user = get_user(username)
+    if not user:
+        raise CommandExecutionError('Unable to find user {0}'.format(username))
+
+    # Check openvpn vpnid
+    servers = __salt__['pfsense_openvpn.list_servers']()
+    server = None
+    if vpnid:
+        if vpnid not in servers:
+            raise CommandExecutionError('Server with id {0} not found'.format(vpnid))
+        server = servers[vpnid]
+    else:
+        if len(servers.keys()) == 1:
+            vpnid = servers.keys()[0]
+            server = servers[vpnid]
+        else:
+            raise CommandExecutionError('Multiple VPN server found, please specify vpnid parameter.')
+
+    # Check caref
+    cas = __salt__['pfsense_certificate.list_ca']()
+    if caref:
+        if caref not in cas:
+            raise CommandExecutionError('CA {0} not found on this system'.format(caref))
+    else:
+        caref = server['caref']
+
+    # Check that username have a cert with ca
+    if 'cert' not in user:
+        raise CommandExecutionError('User {0} does not have any certificates'.format(username))
+
+    wanted_certid = None
+    for certid in user['cert']:
+        cert = __salt__['pfsense_certificate.get_cert'](certid)
+        if not cert:
+            raise CommandExecutionError('Weird shit, user have cert {0} but it does not exists on system'.format(certid))
+        if cert['caref'] == caref:
+            wanted_certid = certid
+            break
+
+    if not wanted_certid:
+        raise CommandExecutionError('Unable to find a user certificate')
+
+    cert_index = __salt__['pfsense_certificate.get_cert_index'](certid)
+    if not cert_index:
+        raise CommandExecutionError('Unable to get cert index.')
+
+    # Check that ca match vpn caref
+    if server['caref'] != caref:
+        raise CommandExecutionError('OpenVPN server CA {0} does not match wanted CA {1}'.format(server['caref'], caref))
+
+    # Launch generation
+    cmd = ['php', '/opt/helpers/export_openvpn_config.php', vpnid, cert_index, caref, addr, conf_type]
+
+    result = __salt__['cmd.run_all'](cmd,
+                                     python_shell=False)
+
+    # Return path
+    if result['retcode'] != 0:
+        raise CommandExecutionError(result['stdout'])
+    return result['stdout']
+
+
 def remove_user(username):
     client = _get_client()
     config = client.config_get()
