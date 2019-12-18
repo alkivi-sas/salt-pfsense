@@ -277,6 +277,27 @@ def add_cert(refid, descr, caref, crt, prv, cert_type):
     return cert
 
 
+def remove_cert(refid):
+    client = _get_client()
+    config = client.config_get()
+
+    cert_index = get_cert_index(refid)
+    if cert_index is None:
+        raise CommandExecutionError('cert {0} does not exist'.format(refid))
+
+    cert = config['cert']
+
+    patch_cert = {
+        'cert': cert,
+    }
+    del(patch_cert['cert'][cert_index])
+
+    response = client.config_patch(patch_cert)
+    if response['message'] != 'ok':
+	raise CommandExecutionError('unable to remove cert', response['message'])
+
+    return True
+
 
 def list_cert(all_data=False):
     """Return dict of cert."""
