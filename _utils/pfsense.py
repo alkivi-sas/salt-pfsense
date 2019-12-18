@@ -131,7 +131,12 @@ class FauxapiLib:
         return res
 
     def config_patch(self, config):
-        return self._api_request('POST', 'config_patch', data=json.dumps(config))
+        res = self._api_request('POST', 'config_patch', data=json.dumps(config))
+
+        # Fix chmod for file
+        __salt__['cmd.run']('chmod 644 /cf/conf/config.xml')
+
+        return res
 
     def config_reload(self):
         return self._api_request('GET', 'config_reload')

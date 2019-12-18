@@ -53,7 +53,7 @@ def list_servers(all_data=False):
         return ret
 
     for server in config['openvpn-server']:
-        vpnid = int(server['vpnid'])
+        vpnid = str(server['vpnid'])
         if all_data:
             data = server
         else:
@@ -69,17 +69,16 @@ def list_servers(all_data=False):
             }
             if 'auth_mode' in server:
                 data['auth_mode'] = server['auth_mode']
+            if 'crlref' in server:
+                data['crlref'] = server['crlref']
         ret[vpnid] = data
     return ret
 
 
 def get_server(vpnid, all_data=False):
     """Return specific server."""
-    vpnid = int(vpnid)
+    vpnid = str(vpnid)
     servers = list_servers(all_data)
-    logger.warning('test')
-    logger.warning(servers)
-    logger.warning(vpnid)
-    if str(vpnid) not in servers:
+    if vpnid not in servers:
         return None
     return servers[vpnid]

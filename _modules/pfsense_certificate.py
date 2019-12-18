@@ -272,6 +272,8 @@ def add_cert(refid, descr, caref, crt, prv, cert_type):
     if response['message'] != 'ok':
 	raise CommandExecutionError('unable to remove group', response['message'])
 
+    _increase_ca_serial(caref)
+
     return cert
 
 
@@ -355,12 +357,15 @@ def _increase_ca_serial(caref):
     config = client.config_get()
 
     ca_index, ca = _get_ca(caref)
-    serial = int(ca['serial']) + 1
+    if 'serial' not in ca:
+        serial = 1
+    else:
+        serial = int(ca['serial']) + 1
 
     patch_ca = {
 	'ca': config['ca']
     }
-    patch_ca['ca'][ca_index]['serial'] = serial
+    patch_ca['ca'][ca_index]['serial'] = str(serial)
     response = client.config_patch(patch_ca)
     if response['message'] != 'ok':
 	raise CommandExecutionError('unable to increment serial', id_type)
