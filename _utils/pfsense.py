@@ -51,7 +51,7 @@ class FauxapiLib:
             host = FAUXAPI_HOST
         if not apikey:
             apikey = self._get_apikey()
-		
+        
         if not apisecret:
             apisecret = self._get_apisecret(apikey)
 
@@ -212,9 +212,9 @@ class FauxapiLib:
         return '{}:{}:{}:{}'.format(self.apikey, timestamp, nonce, hash)
 
     def _json_parse(self, data):
-	try:
-	    return json.loads(data)
-	except json.JSONDecodeError:
-	    pass
-	raise PfsenseFauxapiException('Unable to parse response data!', data)
+        try:
+            return json.loads(data)
+        except json.JSONDecodeError:
+            pass
+        raise PfsenseFauxapiException('Unable to parse response data!', data)
 

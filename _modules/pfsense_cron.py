@@ -54,7 +54,7 @@ def list_cron():
     response_data = {}
     for cron in config['cron']['item']:
         identifier = _generate_identifier(cron)
-	response_data[identifier] = cron
+        response_data[identifier] = cron
     return response_data
 
 
@@ -85,7 +85,7 @@ def add_cron(identifier, command, who='root', mday='*', hour='*', month='*', wda
 
     cron_index, cron = _get_cron(identifier, command)
     if cron_index is not None:
-	raise CommandExecutionError('cron {0} already exists'.format(identifier))
+        raise CommandExecutionError('cron {0} already exists'.format(identifier))
 
     client = _get_client()
     config = client.config_get()
@@ -107,7 +107,7 @@ def manage_cron(identifier, command=None, who=None, mday=None, hour=None, month=
 
     cron_index, cron = _get_cron(identifier, command)
     if cron_index is None:
-	raise CommandExecutionError('cron {0} does not exist'.format(identifier))
+        raise CommandExecutionError('cron {0} does not exist'.format(identifier))
 
     if command is not None:
         cron['command'] = command
@@ -141,7 +141,7 @@ def manage_cron(identifier, command=None, who=None, mday=None, hour=None, month=
 
     response = client.config_patch(patch_system_cron)
     if response['message'] != 'ok':
-	raise CommandExecutionError('unable to manage cron', response['message'])
+        raise CommandExecutionError('unable to manage cron', response['message'])
 
     return cron
 
@@ -150,20 +150,20 @@ def remove_cron(identifier, command=None):
 
     cron_index, cron = _get_cron(identifier, command)
     if cron_index is None:
-	return True
+        return True
 
     client = _get_client()
     config = client.config_get()
     patch_system_cron = {
-	'cron': {
-	    'item': config['cron']['item']
-	}
+        'cron': {
+            'item': config['cron']['item']
+        }
     }
     del(patch_system_cron['cron']['item'][cron_index])
 
     response = client.config_patch(patch_system_cron)
     if response['message'] != 'ok':
-	raise CommandExecutionError('unable to remove cron', response['message'])
+        raise CommandExecutionError('unable to remove cron', response['message'])
 
 
     return True
@@ -191,15 +191,15 @@ def _get_cron(identifier, command):
             else:
                 raise CommandExecutionError('Multiple cron found')
 
-	if cron_data['command'] == command:
+        if cron_data['command'] == command:
             if cron is None:
                 cron = cron_data
                 correct_index = cron_index
             else:
                 raise CommandExecutionError('Multiple cron found')
-	cron_index += 1
+        cron_index += 1
 
     if cron is None:
-	return None, None
+        return None, None
 
     return correct_index, cron

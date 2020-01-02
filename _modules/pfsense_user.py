@@ -42,8 +42,8 @@ def list_users():
 
     response_data = {}
     for user in config['system']['user']:
-	response_data[user['name']] = user
-	del(response_data[user['name']]['name'])
+        response_data[user['name']] = user
+        del(response_data[user['name']]['name'])
     return response_data
 
 
@@ -60,40 +60,40 @@ def add_user(username, attributes={}):
 
     user_index, user = _get_entity('user', username)
     if user_index is not None:
-	raise CommandExecutionError('user {0} already exists'.format(username))
+        raise CommandExecutionError('user {0} already exists'.format(username))
 
     valid_attributes = ['password','descr','expires','dashboardcolumns','authorizedkeys','ipsecpsk','webguicss','disabled','priv']
 
     user = {
-	'scope': 'user',
-	'bcrypt-hash': 'no-password-set',
-	'descr': '',
-	'name': username,
-	'expires': '',
-	'dashboardcolumns': '2',
-	'authorizedkeys': '',
-	'ipsecpsk': '',
-	'webguicss': 'pfSense.css',
-	'uid': _get_next_id('uid'),
+        'scope': 'user',
+        'bcrypt-hash': 'no-password-set',
+        'descr': '',
+        'name': username,
+        'expires': '',
+        'dashboardcolumns': '2',
+        'authorizedkeys': '',
+        'ipsecpsk': '',
+        'webguicss': 'pfSense.css',
+        'uid': _get_next_id('uid'),
     }
 
     for attribute, value in attributes.items():
-	if attribute not in valid_attributes:
-	    raise CommandExecutionError('unsupported attribute type', attribute)
+        if attribute not in valid_attributes:
+            raise CommandExecutionError('unsupported attribute type', attribute)
 
-	if attribute == 'disabled':
-	    if value is True:
-		user[attribute] = ''
-	    else:
-		if attribute in user:
-		    del(user[attribute])
-	elif attribute == 'password':
-	    user['bcrypt-hash'] = 'todo'
-	else:
-	    if len(value) == 0 and attribute in user:
-		del(user[attribute])
-	    elif len(value) > 0:
-		user[attribute] = value
+        if attribute == 'disabled':
+            if value is True:
+                user[attribute] = ''
+            else:
+                if attribute in user:
+                    del(user[attribute])
+        elif attribute == 'password':
+            user['bcrypt-hash'] = 'todo'
+        else:
+            if len(value) == 0 and attribute in user:
+                del(user[attribute])
+            elif len(value) > 0:
+                user[attribute] = value
 
     patch_system_user = {
         'system': {
@@ -135,39 +135,39 @@ def manage_user(username, attributes):
 
     user_index, user = _get_entity('user', username)
     if user_index is None:
-	raise CommandExecutionError('user {0} does not exist'.format(username))
+        raise CommandExecutionError('user {0} does not exist'.format(username))
 
     if type(attributes) != dict:
-	raise CommandExecutionError('attributes is incorrect type')
+        raise CommandExecutionError('attributes is incorrect type')
 
     for attribute, value in attributes.items():
-	if attribute not in valid_attributes:
-	    raise CommandExecutionError('unsupported attribute type', attribute)
+        if attribute not in valid_attributes:
+            raise CommandExecutionError('unsupported attribute type', attribute)
 
-	if attribute == 'disabled':
-	    if value is True:
-		user[attribute] = ''
-	    else:
-		if attribute in user:
-		    del(user[attribute])
-	elif attribute == 'password':
-	    user['bcrypt-hash'] = 'toto'
-	else:
-	    if len(value) == 0 and attribute in user:
-		del(user[attribute])
-	    elif len(value) > 0:
-		user[attribute] = value
+        if attribute == 'disabled':
+            if value is True:
+                user[attribute] = ''
+            else:
+                if attribute in user:
+                    del(user[attribute])
+        elif attribute == 'password':
+            user['bcrypt-hash'] = 'toto'
+        else:
+            if len(value) == 0 and attribute in user:
+                del(user[attribute])
+            elif len(value) > 0:
+                user[attribute] = value
 
     patch_system_user = {
-	'system': {
-	    'user': config['system']['user']
-	}
+        'system': {
+            'user': config['system']['user']
+        }
     }
     patch_system_user['system']['user'][user_index] = user
 
     response = client.config_patch(patch_system_user)
     if response['message'] != 'ok':
-	raise CommandExecutionError('unable to manage user', response['message'])
+        raise CommandExecutionError('unable to manage user', response['message'])
 
     if 'descr' in attributes:
         descr = attributes['descr']
@@ -199,7 +199,7 @@ def add_cert(username, refid):
 
     user_index, user = _get_entity('user', username)
     if user_index is None:
-	raise CommandExecutionError('user {0} does not exist'.format(username))
+        raise CommandExecutionError('user {0} does not exist'.format(username))
 
     if 'cert' in user:
         user['cert'].append(refid)
@@ -207,15 +207,15 @@ def add_cert(username, refid):
         user['cert'] = [refid]
 
     patch_system_user = {
-	'system': {
-	    'user': config['system']['user']
-	}
+        'system': {
+            'user': config['system']['user']
+        }
     }
     patch_system_user['system']['user'][user_index] = user
 
     response = client.config_patch(patch_system_user)
     if response['message'] != 'ok':
-	raise CommandExecutionError('unable to manage user', response['message'])
+        raise CommandExecutionError('unable to manage user', response['message'])
     return True
 
 
@@ -291,18 +291,18 @@ def remove_user(username):
 
     user_index, user = _get_entity('user', username)
     if user_index is None:
-	raise CommandExecutionError('user does not exist', username)
+        raise CommandExecutionError('user does not exist', username)
 
     patch_system_user = {
-	'system': {
-	    'user': config['system']['user']
-	}
+        'system': {
+            'user': config['system']['user']
+        }
     }
     del(patch_system_user['system']['user'][user_index])
 
     response = client.config_patch(patch_system_user)
     if response['message'] != 'ok':
-	raise CommandExecutionError('unable to remove user', response['message'])
+        raise CommandExecutionError('unable to remove user', response['message'])
 
     system_user = __salt__['user.delete'](username, remove=True, force=True)
     logger.warning('system_user')
@@ -319,8 +319,8 @@ def list_groups():
 
     response_data = {}
     for group in config['system']['group']:
-	response_data[group['name']] = group
-	del(response_data[group['name']]['name'])
+        response_data[group['name']] = group
+        del(response_data[group['name']]['name'])
     return response_data
 
 def add_group(groupname):
@@ -329,25 +329,25 @@ def add_group(groupname):
 
     group_index, group = _get_entity('group', groupname)
     if group_index is not None:
-	raise CommandExecutionError('group already exists', groupname)
+        raise CommandExecutionError('group already exists', groupname)
 
     group = {
-	'scope': 'local',
-	'description': '',
-	'name': groupname,
-	'gid': _get_next_id('gid'),
+        'scope': 'local',
+        'description': '',
+        'name': groupname,
+        'gid': _get_next_id('gid'),
     }
 
     patch_system_group = {
-	'system': {
-	    'group': config['system']['group']
-	}
+        'system': {
+            'group': config['system']['group']
+        }
     }
     patch_system_group['system']['group'].append(group)
 
     response = client.config_patch(patch_system_group)
     if response['message'] != 'ok':
-	raise CommandExecutionError('unable to add group', response['message'])
+        raise CommandExecutionError('unable to add group', response['message'])
 
     _increment_next_id('gid')
 
@@ -361,37 +361,37 @@ def manage_group(groupname, attributes):
 
     group_index, group = _get_entity('group', groupname)
     if group_index is None:
-	raise CommandExecutionError('group does not exist', groupname)
+        raise CommandExecutionError('group does not exist', groupname)
 
     if type(attributes) != dict:
-	raise CommandExecutionError('attributes is incorrect type')
+        raise CommandExecutionError('attributes is incorrect type')
 
     for attribute, value in attributes.items():
-	if attribute not in valid_attributes:
-	    raise CommandExecutionError('unsupported attribute type', attribute)
+        if attribute not in valid_attributes:
+            raise CommandExecutionError('unsupported attribute type', attribute)
 
-	if attribute == 'member':
-	    if type(value) != list:
-		raise CommandExecutionError('member attribute is incorrect type')
-	elif attribute == 'priv':
-	    if type(value) != list:
-		raise CommandExecutionError('priv attribute is incorrect type')
+        if attribute == 'member':
+            if type(value) != list:
+                raise CommandExecutionError('member attribute is incorrect type')
+        elif attribute == 'priv':
+            if type(value) != list:
+                raise CommandExecutionError('priv attribute is incorrect type')
 
-	if len(value) == 0 and attribute in group:
-	    del(group[attribute])
-	elif len(value) > 0:
-	    group[attribute] = value
+        if len(value) == 0 and attribute in group:
+            del(group[attribute])
+        elif len(value) > 0:
+            group[attribute] = value
 
     patch_system_group = {
-	'system': {
-	    'group': config['system']['group']
-	}
+        'system': {
+            'group': config['system']['group']
+        }
     }
     patch_system_group['system']['group'][group_index] = group
 
     response = client.config_patch(patch_system_group)
     if response['message'] != 'ok':
-	raise CommandExecutionError('unable to manage group', response['message'])
+        raise CommandExecutionError('unable to manage group', response['message'])
 
     return group
 
@@ -401,18 +401,18 @@ def remove_group(groupname):
 
     group_index, group = _get_entity('group', groupname)
     if group_index is None:
-	raise CommandExecutionError('group does not exist', groupname)
+        raise CommandExecutionError('group does not exist', groupname)
 
     patch_system_group = {
-	'system': {
-	    'group': config['system']['group']
-	}
+        'system': {
+            'group': config['system']['group']
+        }
     }
     del(patch_system_group['system']['group'][group_index])
 
     response = client.config_patch(patch_system_group)
     if response['message'] != 'ok':
-	raise CommandExecutionError('unable to remove group', response['message'])
+        raise CommandExecutionError('unable to remove group', response['message'])
 
     return group
 
@@ -426,13 +426,13 @@ def _get_entity(entity_type, entity_name):
     entity = None
     entity_index = 0
     for entity_data in config['system'][entity_type]:
-	if entity_data['name'] == entity_name:
-	    entity = entity_data
-	    break
-	entity_index += 1
+        if entity_data['name'] == entity_name:
+            entity = entity_data
+            break
+        entity_index += 1
 
     if entity is None:
-	return None, None
+        return None, None
 
     return entity_index, entity
 
@@ -450,11 +450,11 @@ def _increment_next_id(id_type):
     id_name = 'next{}'.format(id_type)
     next_id = int(_get_next_id(id_type)) + 1
     patch_system_nextid = {
-	'system': {
-	    id_name: str(next_id)
-	}
+        'system': {
+            id_name: str(next_id)
+        }
     }
     response = client.config_patch(patch_system_nextid)
     if response['message'] != 'ok':
-	raise CommandExecutionError('unable to increment the nextid', id_type)
+        raise CommandExecutionError('unable to increment the nextid', id_type)
     return next_id

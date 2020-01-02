@@ -270,7 +270,7 @@ def add_cert(refid, descr, caref, crt, prv, cert_type):
     }
     response = client.config_patch(patch_cert)
     if response['message'] != 'ok':
-	raise CommandExecutionError('unable to remove group', response['message'])
+        raise CommandExecutionError('unable to remove group', response['message'])
 
     _increase_ca_serial(caref)
 
@@ -294,7 +294,7 @@ def remove_cert(refid):
 
     response = client.config_patch(patch_cert)
     if response['message'] != 'ok':
-	raise CommandExecutionError('unable to remove cert', response['message'])
+        raise CommandExecutionError('unable to remove cert', response['message'])
 
     return True
 
@@ -345,9 +345,9 @@ def get_cert_index(refid):
         return None
 
     for cert in config['cert']:
-	if cert['refid'] == refid:
+        if cert['refid'] == refid:
             return index
-	index += 1
+        index += 1
 
     return None
 
@@ -384,12 +384,12 @@ def _increase_ca_serial(caref):
         serial = int(ca['serial']) + 1
 
     patch_ca = {
-	'ca': config['ca']
+        'ca': config['ca']
     }
     patch_ca['ca'][ca_index]['serial'] = str(serial)
     response = client.config_patch(patch_ca)
     if response['message'] != 'ok':
-	raise CommandExecutionError('unable to increment serial', id_type)
+        raise CommandExecutionError('unable to increment serial', id_type)
     return serial
 
 def _get_ca(caref):
@@ -399,12 +399,12 @@ def _get_ca(caref):
     ca = None
     ca_index = 0
     for ca_data in config['ca']:
-	if ca_data['refid'] == caref:
-	    ca = ca_data
-	    break
-	ca_index += 1
+        if ca_data['refid'] == caref:
+            ca = ca_data
+            break
+        ca_index += 1
 
     if ca is None:
-	return None, None
+        return None, None
 
     return ca_index, ca
