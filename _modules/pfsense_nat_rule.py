@@ -365,13 +365,9 @@ def add_rule(descr, protocol, target, interface, local_port, disabled=False, sou
     if response['message'] != 'ok':
         raise CommandExecutionError('unable to add nat rule', response['message'])
 
-    cmd = ['php', '/opt/helpers/nat_rule.php']
-
-    result = __salt__['cmd.run_all'](cmd,
-                                     python_shell=False)
-
-    if result['retcode'] != 0:
-        raise CommandExecutionError(result['stdout'])
+    response = client.send_event('filter reload')
+    if response['message'] != 'ok':
+        raise CommandExecutionError('unable to filter reload', response['message'])
 
     return test_rule.to_dict()
 
@@ -422,12 +418,8 @@ def rm_rule(descr, protocol, target, interface, local_port, disabled=False, sour
     if response['message'] != 'ok':
         raise CommandExecutionError('unable to add nat rule', response['message'])
 
+    response = client.send_event('filter reload')
+    if response['message'] != 'ok':
+        raise CommandExecutionError('unable to filter reload', response['message'])
 
-    cmd = ['php', '/opt/helpers/nat_rule.php']
-
-    result = __salt__['cmd.run_all'](cmd,
-                                     python_shell=False)
-
-    if result['retcode'] != 0:
-        raise CommandExecutionError(result['stdout'])
     return True

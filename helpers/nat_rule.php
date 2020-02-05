@@ -14,9 +14,6 @@ require_once("filter.inc");
 require_once("shaper.inc");
 
 
-$retval = 0;
-$retval |= filter_configure();
-pfSense_handle_custom_code("/usr/local/pkg/firewall_nat/apply");
-exit($retval);
+exit(0);
 
 ?>
