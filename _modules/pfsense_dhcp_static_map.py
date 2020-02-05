@@ -55,6 +55,9 @@ def list_static_maps(interface):
     config = client.config_get()
 
     ret = {}
+    if 'staticmap' not in config['dhcpd'][interface]:
+        return ret
+
     for static_map in config['dhcpd'][interface]['staticmap']:
         ret[static_map['mac']] = static_map
     return ret
@@ -132,20 +135,21 @@ def set_static_map(interface, mac, ipaddr, hostname, **kwargs):
 
     new_static_maps = []
     to_add = True
-    for current_static_map in config['dhcpd'][interface]['staticmap']:
-        if current_static_map['mac'] == mac:
-            to_add = False
-            for key, value in wanted_data.items():
-                if key not in current_static_map:
-                    logger.debug('setting {0} to {1}'.format(key, value))
-                    current_static_map[key] = value
-                elif current_static_map[key] != wanted_data[key]:
-                    logger.debug('updating {0} to {1}'.format(key, value))
-                    to_update = True
-                    current_static_map[key] = value
-                else:
-                    continue
-        new_static_maps.append(current_static_map)
+    if 'staticmap' in config['dhcpd'][interface]:
+        for current_static_map in config['dhcpd'][interface]['staticmap']:
+            if current_static_map['mac'] == mac:
+                to_add = False
+                for key, value in wanted_data.items():
+                    if key not in current_static_map:
+                        logger.debug('setting {0} to {1}'.format(key, value))
+                        current_static_map[key] = value
+                    elif current_static_map[key] != wanted_data[key]:
+                        logger.debug('updating {0} to {1}'.format(key, value))
+                        to_update = True
+                        current_static_map[key] = value
+                    else:
+                        continue
+            new_static_maps.append(current_static_map)
 
     if to_add:
         logger.debug('adding with data {0}'.format(wanted_data))

@@ -145,4 +145,12 @@ def rm_ip(ip):
     elif result['message'] != 'ok':
         logger.warning(result)
         raise CommandExecutionError('Problem when updating alias')
+
+    cmd = ['php', '/opt/helpers/sshguard_whitelist.php']
+
+    result = __salt__['cmd.run_all'](cmd,
+                                     python_shell=False)
+
+    if result['retcode'] != 0:
+        raise CommandExecutionError(result['stdout'])
     return True
