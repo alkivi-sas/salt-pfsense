@@ -494,9 +494,13 @@ def add_rule(descr,
     client = _get_client()
     config = client.config_get()
 
+    actual_rules = []
+    if 'rule' in config['filter']:
+        actual_rules = config['filter']['rule']
+
     patch_filter_rule = {
         'filter': {
-            'rule': config['filter']['rule']
+            'rule': actual_rules,
         }
     }
 

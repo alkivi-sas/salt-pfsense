@@ -355,9 +355,13 @@ def add_rule(descr, protocol, target, interface, local_port, disabled=False, sou
 
     logger.warning('init')
 
+    actual_rules = []
+    if 'rule' in config['nat']:
+        actual_rules = config['nat']['rule']
+
     patch_nat_rule = {
         'nat': {
-            'rule': config['nat']['rule']
+            'rule': actual_rules,
         }
     }
     patch_nat_rule['nat']['rule'].insert(index, test_rule.to_dict())

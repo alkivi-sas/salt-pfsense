@@ -136,7 +136,7 @@ def list_wan_interfaces():
     interfaces = list_interfaces()
     wan_interfaces = {}
     for interface, data in interfaces.items():
-        if 'gateway' in data:
+        if 'gateway' in data and data['gateway']:
             wan_interfaces[interface] = data
         elif 'ipaddr' in data and data['ipaddr'] == 'pppoe':
             wan_interfaces[interface] = data
