@@ -88,7 +88,7 @@ def add_user(username, attributes={}):
                 if attribute in user:
                     del(user[attribute])
         elif attribute == 'password':
-            user['bcrypt-hash'] = 'todo'
+            user['bcrypt-hash'] = value
         else:
             if len(value) == 0 and attribute in user:
                 del(user[attribute])
@@ -116,14 +116,9 @@ def add_user(username, attributes={}):
     createhome=False
     gid=65534
     system_user = __salt__['user.add'](username, uid=uid, gid=gid, shell=shell, fullname=fullname, createhome=createhome)
-    logger.warning('system_user')
-    logger.warning(system_user)
 
-    #if 'password' in attributes:
-    #    wanted_hash = user['bcrypt-hash']
-    #    system_user = __salt__['shadow.set_password'](username, wanted_hash)
-    #    logger.warning('system_user hash')
-    #    logger.warning(system_user)
+    if user['bcrypt-hash'].startswith('$'):
+        system_user = __salt__['shadow.set_password'](username, user['bcrypt-hash'])
 
     return user
 
@@ -151,7 +146,7 @@ def manage_user(username, attributes):
                 if attribute in user:
                     del(user[attribute])
         elif attribute == 'password':
-            user['bcrypt-hash'] = 'toto'
+            user['bcrypt-hash'] = value
         else:
             if len(value) == 0 and attribute in user:
                 del(user[attribute])
@@ -172,8 +167,6 @@ def manage_user(username, attributes):
     if 'descr' in attributes:
         descr = attributes['descr']
         system_user = __salt__['user.chfullname'](username, descr)
-        logger.warning('system_user descr')
-        logger.warning(system_user)
 
     if 'disabled' in attributes:
         disabled = attributes['disabled']
@@ -181,14 +174,10 @@ def manage_user(username, attributes):
             system_user = __salt__['user.chshell'](username, '/sbin/nologin')
         else:
             system_user = __salt__['user.chshell'](username, '/sbin/tcsh')
-        logger.warning('system_user descr')
-        logger.warning(system_user)
 
-    #if 'password' in attributes:
-    #    wanted_hash = user['bcrypt-hash']
-    #    system_user = __salt__['shadow.set_password'](username, wanted_hash)
-    #    logger.warning('system_user hash')
-    #    logger.warning(system_user)
+    if 'password' in attributes:
+        if user['bcrypt-hash'].startswith('$'):
+            system_user = __salt__['shadow.set_password'](username, user['bcrypt-hash'])
 
     return user
 
@@ -305,8 +294,6 @@ def remove_user(username):
         raise CommandExecutionError('unable to remove user', response['message'])
 
     system_user = __salt__['user.delete'](username, remove=True, force=True)
-    logger.warning('system_user')
-    logger.warning(system_user)
 
     return True
 

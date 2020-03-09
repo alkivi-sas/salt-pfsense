@@ -21,7 +21,8 @@ def present(
         authorizedkeys=None,
         ipsecpsk=None,
         webguicss=None,
-        disabled=None):
+        disabled=None,
+        priv=None):
     '''
     '''
     ret = {'name': name,
@@ -46,6 +47,8 @@ def present(
         wanted_data['webguicss'] = webguicss
     if disabled is not None:
         wanted_data['disabled'] = disabled
+    if priv is not None:
+        wanted_data['priv'] = priv
 
 
     user = __salt__['pfsense_user.get_user'](name)
