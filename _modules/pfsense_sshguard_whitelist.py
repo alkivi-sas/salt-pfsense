@@ -23,8 +23,11 @@ from salt.exceptions import (
 
 # Import 3rd-party libs
 from salt.ext import six
-from salt.ext.six.moves import range
-from salt.ext.ipaddress import IPv4Interface
+
+try:
+    from ipaddress import IPv4Interface
+except ImportError:
+    from salt.ext.ipaddress import IPv4Interface
 
 logger = logging.getLogger(__name__)
 
