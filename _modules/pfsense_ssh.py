@@ -139,7 +139,10 @@ def _encode_keys(keys):
     to_put_keys = '\r\n'.join(correct_keys)
     if PY3:
         to_put_keys = to_put_keys.encode('utf-8')
-    return base64.b64encode(to_put_keys)
+    res = base64.b64encode(to_put_keys)
+    if PY3:
+        res = res.decode('utf-8')
+    return res
 
 
 def _get_user(user, config):
