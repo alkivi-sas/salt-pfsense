@@ -11,6 +11,7 @@ import base64
 import hashlib
 import binascii
 import logging
+import sys
 
 # Import Salt libs
 import salt.utils.files
@@ -23,6 +24,8 @@ from salt.exceptions import (
 # Import 3rd-party libs
 from salt.ext import six
 from salt.ext.six.moves import range
+
+PY3 = sys.version_info[0] >= 3
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +86,11 @@ def _decode_keys(raw):
     ret = {}
     keyre = re.compile(r'^(.*?)\s?((?:ssh\-|ecds)[\w-]+\s.+)$')
 
-    keys = base64.b64decode(raw).split('\r\n')
+    decoded = base64.b64decode(raw)
+    if PY3:
+        decoded = decoded.decode('utf-8')
+
+    keys = decoded.split('\r\n')
     for key in keys:
         if key.startswith('#'):
             # Commented Line
@@ -130,6 +137,8 @@ def _encode_keys(keys):
         correct_keys.append(cline)
 
     to_put_keys = '\r\n'.join(correct_keys)
+    if PY3:
+        to_put_keys = to_put_keys.encode('utf-8')
     return base64.b64encode(to_put_keys)
 
 
