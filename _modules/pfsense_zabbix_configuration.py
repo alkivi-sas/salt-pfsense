@@ -11,6 +11,7 @@ import base64
 import hashlib
 import binascii
 import logging
+import sys
 
 # Import Salt libs
 import salt.utils.files
@@ -24,6 +25,8 @@ from salt.exceptions import (
 # Import 3rd-party libs
 from salt.ext import six
 from salt.ext.six.moves import range
+
+PY3 = sys.version_info[0] >= 3
 
 logger = logging.getLogger(__name__)
 
@@ -81,20 +84,26 @@ def _decode_value(value, source):
     '''
     Format according to name.
     '''
+    res = value
     if source == 'userparams':
-        return base64.b64decode(value)
-    else:
-        return value
+        res = base64.b64decode(value)
+        if PY3:
+            res = res.decode('utf-8')
+    return res
 
 
 def _encode_value(value, source):
     '''
     Format according to name.
     '''
+    res = value
     if source == 'userparams':
-        return base64.b64encode(value)
-    else:
-        return value
+        if PY3:
+            value = value.encode('utf-8')
+        res = base64.b64encode(value)
+        if PY3:
+            res = res.decode('utf-8')
+    return res
 
 
 def get_value(name):
