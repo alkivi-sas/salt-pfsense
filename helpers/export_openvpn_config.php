@@ -216,6 +216,14 @@ if (substr($conf_type, 0, 4) == "inst") {
             $exp_name .= "{$legacy_openvpn_version}-I6{$legacy_openvpn_version_rev}-x86_64.exe";
             break;
         case "24":
+            $exp_name .= "{$current_openvpn_version}-I6{$current_openvpn_version_rev}.exe";
+            break;
+        case "Win7":
+            $exp_name .= "{$current_openvpn_version}-I6{$current_openvpn_version_rev}-Win7.exe";
+            break;
+        case "Win10":
+            $exp_name .= "{$current_openvpn_version}-I6{$current_openvpn_version_rev}-Win10.exe";
+            break;
         default:
             $exp_name .= "{$current_openvpn_version}-I6{$current_openvpn_version_rev}.exe";
     }
