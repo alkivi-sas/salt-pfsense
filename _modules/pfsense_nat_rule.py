@@ -238,6 +238,9 @@ def list_rules(out=None):
         raise CommandExecutionError('out must be in {0}'.format(ok_out))
 
     ret = []
+    if 'nat' not in config:
+        return ret
+
     if 'rule' not in config['nat']:
         return ret
 
