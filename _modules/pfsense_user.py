@@ -41,17 +41,20 @@ def list_users():
     config = client.config_get()
 
     response_data = {}
+    index = 0
     for user in config['system']['user']:
+        user['userid'] = index
         response_data[user['name']] = user
         del(response_data[user['name']]['name'])
+        index += 1
     return response_data
 
 
 def get_user(username):
     user_index, user = _get_entity('user', username)
     if user_index is None:
-        return None
-    return user
+        return None, None
+    return user_index, user
 
 
 def add_user(username, attributes={}):
@@ -212,7 +215,7 @@ def export_openvpn_config(username, addr, vpnid=None, caref=None, conf_type='con
     """Export localy in /tmp a openvpn file."""
 
     # Check username exists
-    user = get_user(username)
+    userid, user = get_user(username)
     if not user:
         raise CommandExecutionError('Unable to find user {0}'.format(username))
 
@@ -220,12 +223,13 @@ def export_openvpn_config(username, addr, vpnid=None, caref=None, conf_type='con
     servers = __salt__['pfsense_openvpn.list_servers']()
     server = None
     if vpnid:
+        vpnid=str(vpnid)
         if vpnid not in servers:
             raise CommandExecutionError('Server with id {0} not found'.format(vpnid))
         server = servers[vpnid]
     else:
         if len(servers.keys()) == 1:
-            vpnid = servers.keys()[0]
+            vpnid = list(servers.keys())[0]
             server = servers[vpnid]
         else:
             raise CommandExecutionError('Multiple VPN server found, please specify vpnid parameter.')
@@ -263,7 +267,14 @@ def export_openvpn_config(username, addr, vpnid=None, caref=None, conf_type='con
         raise CommandExecutionError('OpenVPN server CA {0} does not match wanted CA {1}'.format(server['caref'], caref))
 
     # Launch generation
-    cmd = ['php', '/opt/helpers/export_openvpn_config.php', vpnid, cert_index, caref, addr, conf_type]
+    version = __salt__['grains.get']('version', '244RELEASE')
+    cmd = []
+    if version == '244RELEASE':
+        cmd = ['php', '/opt/helpers/export_openvpn_config.php', vpnid, cert_index, caref, addr, conf_type]
+    elif version == '245RELEASE':
+        cmd = ['php', '/opt/helpers/export_openvpn_config.php', vpnid, userid, caref, addr, conf_type]
+    else:
+        raise CommandExecutionError('Version is not yet supported {0}'.format(version))
 
     result = __salt__['cmd.run_all'](cmd,
                                      python_shell=False)

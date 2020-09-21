@@ -48,11 +48,14 @@ def list_crl(all_data=False):
     if 'crl' not in config:
         return ret
 
+    index = 0
     for crl in config['crl']:
+        crl['crlid'] = index
         if all_data:
             data = crl
         else:
             data = {
+                'crlid': crl['crlid'],
                 'descr': crl['descr'],
                 'caref': crl['caref'],
                 'lifetime': crl['lifetime'],
@@ -60,6 +63,7 @@ def list_crl(all_data=False):
                 'method': crl['method'],
             }
         ret[crl['refid']] = data
+        index += 1
     return ret
 
 
@@ -225,15 +229,19 @@ def list_ca(all_data=False):
     if 'ca' not in config:
         return ret
 
+    index = 0
     for ca in config['ca']:
+        ca['caid'] = index
         if all_data:
             data = ca
         else:
             data = {
+                'caid': ca['caid'],
                 'descr': ca['descr'],
                 'serial': ca['serial'],
             }
         ret[ca['refid']] = data
+        index += 1
     return ret
 
 
@@ -308,7 +316,11 @@ def list_cert(all_data=False):
     if 'cert' not in config:
         return ret
 
+    index = 0
     for cert in config['cert']:
+        cert['certid'] = index
+        index += 1
+
         if 'descr' not in cert:
             continue
 
@@ -316,6 +328,7 @@ def list_cert(all_data=False):
             data = cert
         else:
             data = {
+                'certid': cert['certid'],
                 'descr': cert['descr'],
                 'refid': cert['refid'],
             }
