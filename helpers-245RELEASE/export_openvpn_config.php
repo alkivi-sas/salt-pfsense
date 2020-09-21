@@ -33,9 +33,9 @@ require_once("vpn.inc");
 
 global $current_openvpn_version, $current_openvpn_version_rev, $legacy_openvpn_version, $legacy_openvpn_version_rev, $dyndns_split_domain_types;
 
-$srvid = strval($argv[1]);
-$usrid = strval($argv[2]);
-$caref = strval($argv[3]);
+$srvid = $argv[1];
+$crtid = $argv[2];
+$caref = $argv[3];
 $addr = $argv[4];
 $conf_type = $argv[5];
 
@@ -47,6 +47,8 @@ if (!$ca) {
 }
 
 
+# We use only SSL based ...
+$usrid = '';
 $advancedoptions = '';
 $verifyservercn = 'auto';
 $blockoutsidedns = '0';
@@ -56,8 +58,7 @@ $usetoken = '0';
 $usepkcs11 = '0';
 $pkcs11providers = '';
 $pkcs11id = '';
-$silent = '1';
-$crtid = '0';
+$slient = '1';
 
 
 $srvcfg = get_openvpnserver_by_id($srvid);
@@ -230,8 +231,6 @@ if (substr($conf_type, 0, 4) == "inst") {
     }
 
     $exp_name = urlencode($exp_name);
-    $debug = "srvid: " . $srvid . " usrid: " . $usrid . " crtid: " . $crtid . " useaddr " . $useaddr . " verifyservercn: " . $verifyservercn . " blockoutsidedns: " . $blockoutsidedns . " legacy: " . $legacy . " randomlocalport:      " . $randomlocalport . " usetoken: " . $usetoken . " password: " . $password . " proxy: " . $proxy . " advancedoptions: " . $advancedoptions . " act: ". substr($conf_type, 5) . " usepkcs11: " . $usepkcs11 . " pkcs11providers: " . $pkcs11providers . " pkcs11id: " . $pkcs11id . " silent: " . $silent;
-    file_put_contents('/tmp/vpn_debug_alkivi.txt', $debug);
     $exp_path = openvpn_client_export_installer($srvid, $usrid, $crtid, $useaddr, $verifyservercn, $blockoutsidedns, $legacy, $randomlocalport, $usetoken, $password, $proxy, $advancedoptions, substr($conf_type, 5), $usepkcs11, $pkcs11providers, $pkcs11id, $silent);
 }
 

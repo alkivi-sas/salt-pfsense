@@ -267,14 +267,7 @@ def export_openvpn_config(username, addr, vpnid=None, caref=None, conf_type='con
         raise CommandExecutionError('OpenVPN server CA {0} does not match wanted CA {1}'.format(server['caref'], caref))
 
     # Launch generation
-    version = __salt__['grains.get']('version', '244RELEASE')
-    cmd = []
-    if version == '244RELEASE':
-        cmd = ['php', '/opt/helpers/export_openvpn_config.php', vpnid, cert_index, caref, addr, conf_type]
-    elif version == '245RELEASE':
-        cmd = ['php', '/opt/helpers/export_openvpn_config.php', vpnid, userid, caref, addr, conf_type]
-    else:
-        raise CommandExecutionError('Version is not yet supported {0}'.format(version))
+    cmd = ['php', '/opt/helpers/export_openvpn_config.php', vpnid, cert_index, caref, addr, conf_type]
 
     result = __salt__['cmd.run_all'](cmd,
                                      python_shell=False)
