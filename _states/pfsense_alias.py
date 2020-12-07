@@ -14,7 +14,9 @@ def present(
         target,
         type,
         descr='',
-        detail=''):
+        detail='',
+        url=None,
+        updatefreq=None):
     '''
     '''
     ret = {'name': name,
@@ -22,9 +24,9 @@ def present(
            'result': True,
            'comment': ''}
 
-    targets = [target]
+    targets = [str(target)]
     if isinstance(target, list):
-        targets = target
+        targets = [str(x) for x in target]
 
     is_present = __salt__['pfsense_alias.get_target'](name)
     if __opts__['test']:
@@ -43,10 +45,13 @@ def present(
             target,
             type=type,
             descr=descr,
-            detail=detail)
+            detail=detail,
+            url=url,
+            updatefreq=updatefreq,
+            )
 
     real_targets = ' '.join(targets)
-    if is_present: 
+    if is_present:
         is_ok = __salt__['pfsense_alias.has_target'](name, target)
         if is_ok:
             ret['comment'] = ('Alias {0} was already OK'.format(name))
@@ -75,7 +80,7 @@ def absent(name):
 
     data = __salt__['pfsense_alias.rm_alias'](name)
 
-    if is_present: 
+    if is_present:
         ret['changes'][name] = 'Removed'
         ret['comment'] = ('Alias {0} removed'.format(name))
     else:

@@ -98,11 +98,11 @@ def has_target(alias, target):
     else:
         if target not in aliases[alias]['addresses']:
             global_presence = False
-            
+
     return global_presence
 
 
-def set_target(alias, target, type=None, descr=None, detail=None):
+def set_target(alias, target, type=None, descr=None, detail=None, url=None, updatefreq=None):
     '''
     Set the entry in the aliases file for the given alias, this will overwrite
     any previous entry for the given alias or create a new one if it does not
@@ -120,9 +120,9 @@ def set_target(alias, target, type=None, descr=None, detail=None):
 
     targets = []
     if isinstance(target, list):
-        targets = target
+        targets = [str(x) for x in target]
     else:
-        targets = [target]
+        targets = [str(target)]
 
     is_already_ok = True
     current_targets = get_target(alias)
@@ -152,7 +152,7 @@ def set_target(alias, target, type=None, descr=None, detail=None):
             new_aliases.append(current_alias)
 
     if to_add:
-        if type not in ['port', 'network', 'host']:
+        if type not in ['port', 'network', 'host', 'urltable']:
             raise SaltInvocationError('type is not correct')
         new_alias = {
                 'name': alias,
@@ -163,6 +163,10 @@ def set_target(alias, target, type=None, descr=None, detail=None):
             new_alias['descr'] = descr
         if detail:
             new_alias['detail'] = detail
+        if url:
+            new_alias['url'] = url
+        if updatefreq:
+            new_alias['updatefreq'] = '{0}'.format(updatefreq)
         new_aliases.append(new_alias)
 
     if 'alias' not in config['aliases']:
