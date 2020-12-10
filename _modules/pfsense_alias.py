@@ -55,6 +55,10 @@ def list_aliases():
     for alias in config['aliases']['alias']:
         addresses = alias['address'].split(' ')
         alias['addresses'] = addresses
+        if 'url' not in alias:
+            alias['url'] = ''
+        if 'updatefreq' not in alias:
+            alias['updatefreq'] = ''
         ret[alias['name']] = alias
     return ret
 
@@ -70,6 +74,30 @@ def get_target(alias):
     if alias in aliases:
         return aliases[alias]['addresses']
     return []
+
+def get_url(alias):
+    '''
+    Return the target associated with an alias
+    CLI Example:
+    .. code-block:: bash
+        salt '*' pfsense_aliases.get_url
+    '''
+    aliases = list_aliases()
+    if alias in aliases:
+        return aliases[alias]['url']
+    return ''
+
+def get_updatefreq(alias):
+    '''
+    Return the target associated with an alias
+    CLI Example:
+    .. code-block:: bash
+        salt '*' pfsense_aliases.get_url
+    '''
+    aliases = list_aliases()
+    if alias in aliases:
+        return aliases[alias]['updatefreq']
+    return ''
 
 
 def has_target(alias, target):
@@ -130,6 +158,18 @@ def set_target(alias, target, type=None, descr=None, detail=None, url=None, upda
         if target not in current_targets:
             is_already_ok = False
             break
+
+    if url is not None:
+        current_url = get_url(alias)
+        if current_url != url:
+            is_already_ok = False
+
+    if updatefreq is not None:
+        updatefreq = str(updatefreq)
+        current_updatefreq = get_updatefreq(alias)
+        if current_updatefreq != updatefreq:
+            is_already_ok = False
+
     if is_already_ok:
         return True
 
@@ -149,6 +189,10 @@ def set_target(alias, target, type=None, descr=None, detail=None, url=None, upda
                     current_alias['detail'] = detail
                 if type and type != current_alias['type']:
                     raise CommandExecutionError('You ask for type {0} but already present as {1}'.format(type, current_alias['type']))
+                if url:
+                    current_alias['url'] = url
+                if updatefreq:
+                    current_alias['updatefreq'] = updatefreq
             new_aliases.append(current_alias)
 
     if to_add:
@@ -166,7 +210,7 @@ def set_target(alias, target, type=None, descr=None, detail=None, url=None, upda
         if url:
             new_alias['url'] = url
         if updatefreq:
-            new_alias['updatefreq'] = '{0}'.format(updatefreq)
+            new_alias['updatefreq'] = updatefreq
         new_aliases.append(new_alias)
 
     if 'alias' not in config['aliases']:
