@@ -151,10 +151,10 @@ def revoke_user_certificate(user, crlid=None, certid=None):
 
     crls = list_crl()
     found_crlid = None
-    if len(crls.keys()) == 0:
+    if len(list(crls.keys())) == 0:
         raise CommandExecutionError('no CRL on the pfsense.')
-    elif len(crls.keys()) == 1:
-        found_crlid = crls.keys()[0]
+    elif len(list(crls.keys())) == 1:
+        found_crlid = list(crls.keys())[0]
     elif not crlid:
         raise CommandExecutionError('found multiple crl, please provide crlid')
     elif crlid not in crls:
