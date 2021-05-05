@@ -53,7 +53,7 @@ class FilterRule:
         'max-src-conn': 'max_src_conn',
         'tag': 'tag',
         'tracker': 'tracker',
-        'type': '_type',
+        'type': 'type',
         'interface': 'interface',
         'ipprotocol': 'ipprotocol',
         'os': 'os',
@@ -62,6 +62,7 @@ class FilterRule:
     }
     boolean_keys = {
         'disabled': 'disabled',
+        'log': 'log',
     }
     special_keys = {
         'source': 'source',
@@ -77,7 +78,7 @@ class FilterRule:
         'max-src-nodes': 'max_src_nodes',
         'max-src-conn': 'max_src_conn',
         'tag': 'tag',
-        'type': '_type',
+        'type': 'type',
         'interface': 'interface',
         'ipprotocol': 'ipprotocol',
         'os': 'os',
@@ -105,11 +106,25 @@ class FilterRule:
     def get_default_tracker():
         return str(int(time.time()))
 
+    @staticmethod
+    def clean_source(source):
+        if isinstance(source, dict):
+            if 'port' in source:
+                source['port'] = str(source['port'])
+        return dict(source)
+
+    @staticmethod
+    def clean_destination(destination):
+        if isinstance(destination, dict):
+            if 'port' in destination:
+                destination['port'] = str(destination['port'])
+        return dict(destination)
+
     def __init__(self,
                  descr,
                  protocol,
                  interface,
-                 _type,
+                 type,
                  max_src_states='',
                  tagged='',
                  statetimeout='',
@@ -120,6 +135,7 @@ class FilterRule:
                  os='',
                  _id='',
                  disabled=False,
+                 log=False,
                  tracker=None,
                  ipprotocol=None,
                  statetype=None,
@@ -128,14 +144,23 @@ class FilterRule:
 
         if ipprotocol is None:
             ipprotocol = self.get_defaut_ipprotocol()
+
         if statetype is None:
             statetype = self.get_default_statetype()
+
         if source is None:
             source = self.get_default_source()
+        else:
+            source = self.clean_source(source)
+
         if destination is None:
             destination = self.get_default_destination()
+        else:
+            destination = self.clean_destination(destination)
+
         if tracker is None:
             tracker = self.get_default_tracker()
+
         self.descr = descr
         self.protocol = protocol
         self.interface = interface
@@ -147,10 +172,11 @@ class FilterRule:
         self.max_src_conn = max_src_conn
         self.tag = tag
         self.tracker = tracker
-        self._type = _type
+        self.type = type
         self.os = os
         self._id = _id
         self.disabled = disabled
+        self.log = log
         self.ipprotocol = ipprotocol
         self.statetype = statetype
         self.source = source
@@ -170,46 +196,7 @@ class FilterRule:
         destination
         are equals
         """
-        logger.debug('test eq')
-        logger.debug(self.__dict__)
-        logger.debug(other.__dict__)
-
-        for key, self_key in self.test_keys.items():
-            my_value = getattr(self, self_key)
-            other_value = getattr(other, self_key)
-            if my_value != other_value:
-                logger.debug('filter rule differs because of {0}'.format(key))
-                return False
-
-        # Special keys are dict and must be sub-parsed
-        for key, self_key in self.special_keys.items():
-            my_value = getattr(self, self_key)
-            other_value = getattr(other, self_key)
-
-            # Test Self
-            for my_sub_key, my_sub_value in my_value.items():
-                if my_sub_key not in other_value:
-                    logger.debug('filter rule differs because of {0}:{1}'.format(key, my_sub_key))
-                    return False
-                other_sub_value = other_value[my_sub_key]
-                if other_sub_value != my_sub_value:
-                    logger.debug('filter rule differs because of {0}:{1}'.format(key, my_sub_key))
-                    return False
-
-            # But also test other
-            for other_sub_key, other_sub_value in other_value.items():
-                if other_sub_key not in my_value:
-                    logger.debug('filter rule differs because of {0}:{1}'.format(key, other_sub_key))
-                    return False
-                my_sub_value = my_value[other_sub_key]
-                if other_sub_value != my_sub_value:
-                    logger.debug('filter rule differs because of {0}:{1}'.format(key, other_sub_key))
-                    return False
-
-        # OK here
-        logger.debug('rule match')
-        return True
-
+        return other.descr == self.descr
 
     @classmethod
     def from_config(cls, config):
@@ -278,10 +265,10 @@ class FilterRule:
         """Return a dict representing the rule."""
         object_dict = {}
         for key, self_key in self.available_keys.items():
-            object_dict[key] = getattr(self, self_key)
+            object_dict[key] = str(getattr(self, self_key))
         for key, self_key in self.boolean_keys.items():
             if getattr(self, self_key):
-                object_dict[key] = True
+                object_dict[key] = ''
         for key, self_key in self.special_keys.items():
             object_dict[key] = getattr(self, self_key)
         return object_dict
@@ -327,14 +314,14 @@ def list_rules(interface=None, out=None):
     return ret
 
 
-def get_rule_at_index(index):
+def get_rule_at_index(index, interface):
     '''
     Return the rule
     CLI Example:
     .. code-block:: bash
         salt '*' pfsense_interfaces.get_target interface
     '''
-    rules = list_rules()
+    rules = list_rules(interface=interface)
     if len(rules) <= index:
         raise CommandExecutionError('Wrong index must be in 0 and {0}'.format(len(rules) - 1))
 
@@ -343,7 +330,7 @@ def get_rule_at_index(index):
 def get_rule(descr,
              protocol,
              interface,
-             _type,
+             type,
              max_src_states='',
              tagged='',
              statetimeout='',
@@ -354,6 +341,7 @@ def get_rule(descr,
              os='',
              _id='',
              disabled=False,
+             log=False,
              tracker=None,
              ipprotocol=None,
              statetype=None,
@@ -361,13 +349,10 @@ def get_rule(descr,
              destination=None):
     """Return the rule dict."""
     # Fix integer to string if needed
-    source = _clean_source(source)
-    destination = _clean_destination(destination)
-
     test_rule = FilterRule(descr,
                            protocol,
                            interface,
-                           _type,
+                           type,
                            max_src_states,
                            tagged,
                            statetimeout,
@@ -378,13 +363,14 @@ def get_rule(descr,
                            os,
                            _id,
                            disabled,
+                           log,
                            tracker,
                            ipprotocol,
                            statetype,
                            source,
                            destination)
 
-    present_rules = list_rules(out='object')
+    present_rules = list_rules(out='object', interface=interface)
     for rule in present_rules:
         if rule == test_rule:
             return rule.to_dict()
@@ -394,7 +380,7 @@ def get_rule(descr,
 def has_rule(descr,
              protocol,
              interface,
-             _type,
+             type,
              max_src_states='',
              tagged='',
              statetimeout='',
@@ -405,6 +391,7 @@ def has_rule(descr,
              os='',
              _id='',
              disabled=False,
+             log=False,
              tracker=None,
              ipprotocol=None,
              statetype=None,
@@ -412,13 +399,10 @@ def has_rule(descr,
              destination=None):
     """Return True or False."""
     # Fix integer to string if needed
-    source = _clean_source(source)
-    destination = _clean_destination(destination)
-
     test_rule = FilterRule(descr,
                            protocol,
                            interface,
-                           _type,
+                           type,
                            max_src_states,
                            tagged,
                            statetimeout,
@@ -429,13 +413,14 @@ def has_rule(descr,
                            os,
                            _id,
                            disabled,
+                           log,
                            tracker,
                            ipprotocol,
                            statetype,
                            source,
                            destination)
 
-    present_rules = list_rules(out='object')
+    present_rules = list_rules(out='object', interface=interface)
     if test_rule in present_rules:
         return True
     else:
@@ -445,7 +430,7 @@ def has_rule(descr,
 def add_rule(descr,
              protocol,
              interface,
-             _type,
+             type,
              max_src_states='',
              tagged='',
              statetimeout='',
@@ -456,6 +441,7 @@ def add_rule(descr,
              os='',
              _id='',
              disabled=False,
+             log=False,
              tracker=None,
              ipprotocol=None,
              statetype=None,
@@ -464,13 +450,10 @@ def add_rule(descr,
              index=0):
     """Return Rule."""
     # Fix integer to string if needed
-    source = _clean_source(source)
-    destination = _clean_destination(destination)
-
     test_rule = FilterRule(descr,
                            protocol,
                            interface,
-                           _type,
+                           type,
                            max_src_states,
                            tagged,
                            statetimeout,
@@ -481,13 +464,14 @@ def add_rule(descr,
                            os,
                            _id,
                            disabled,
+                           log,
                            tracker,
                            ipprotocol,
                            statetype,
                            source,
                            destination)
 
-    present_rules = list_rules(out='object')
+    present_rules = list_rules(out='object', interface=interface)
     if test_rule in present_rules:
         return test_rule.to_dict()
 
@@ -508,10 +492,10 @@ def add_rule(descr,
     base_index = _get_index_for_interface(interface)
     final_index = base_index + index
 
-    #logger.debug('rule at index {0}'.format(final_index))
-    #logger.debug(patch_filter_rule['filter']['rule'][final_index])
-    #logger.debug('rule to add')
-    #logger.debug(test_rule.to_dict())
+    logger.debug('rule at index {0}'.format(final_index))
+    logger.debug(patch_filter_rule['filter']['rule'][final_index])
+    logger.debug('rule to add')
+    logger.debug(test_rule.to_dict())
 
     patch_filter_rule['filter']['rule'].insert(final_index, test_rule.to_dict())
     response = client.config_patch(patch_filter_rule)
@@ -536,30 +520,12 @@ def _get_index_for_interface(interface):
     return index
 
 
-def _clean_source(source):
-    if isinstance(source, dict):
-        if 'port' in source:
-            source['port'] = str(source['port'])
-    return source
-
-
-def _clean_destination(destination):
-    if isinstance(destination, dict):
-        if 'port' in destination:
-            destination['port'] = str(destination['port'])
-    return destination
-
-
 def rm_rule(descr, protocol, target, interface, local_port, disabled=False, source=None, destination=None, index=0):
     """Return Rule."""
-    # Fix integer to string if needed
-    source = _clean_source(source)
-    destination = _clean_destination(destination)
-
     test_rule = FilterRule(descr,
                            protocol,
                            interface,
-                           _type,
+                           type,
                            max_src_states,
                            tagged,
                            statetimeout,
