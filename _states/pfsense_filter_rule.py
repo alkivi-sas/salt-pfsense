@@ -12,27 +12,7 @@ from salt.ext import six
 logger = logging.getLogger(__name__)
 
 
-def present(name,
-            protocol,
-            interface,
-            type,
-            max_src_states='',
-            tagged='',
-            statetimeout='',
-            _max='',
-            max_src_nodes='',
-            max_src_conn='',
-            tag='',
-            os='',
-            _id='',
-            disabled=False,
-            log=False,
-            tracker=None,
-            ipprotocol=None,
-            statetype=None,
-            source=None,
-            destination=None,
-            index=0):
+def present(name, interface, index=0, **kwargs):
     '''
     '''
     ret = {'name': name,
@@ -40,27 +20,7 @@ def present(name,
            'result': True,
            'comment': ''}
 
-
-    rule = __salt__['pfsense_filter_rule.get_rule'](name,
-                                                    protocol,
-                                                    interface,
-                                                    type,
-                                                    max_src_states,
-                                                    tagged,
-                                                    statetimeout,
-                                                    _max,
-                                                    max_src_nodes,
-                                                    max_src_conn,
-                                                    tag,
-                                                    os,
-                                                    _id,
-                                                    disabled,
-                                                    log,
-                                                    tracker,
-                                                    ipprotocol,
-                                                    statetype,
-                                                    source,
-                                                    destination)
+    rule = __salt__['pfsense_filter_rule.get_rule'](name, interface)
 
     # Not present case
     if not rule:
@@ -70,28 +30,9 @@ def present(name,
             return ret
 
         # Add rule
-        rule = __salt__['pfsense_filter_rule.add_rule'](name,
-                                                        protocol,
-                                                        interface,
-                                                        type,
-                                                        max_src_states,
-                                                        tagged,
-                                                        statetimeout,
-                                                        _max,
-                                                        max_src_nodes,
-                                                        max_src_conn,
-                                                        tag,
-                                                        os,
-                                                        _id,
-                                                        disabled,
-                                                        log,
-                                                        tracker,
-                                                        ipprotocol,
-                                                        statetype,
-                                                        source,
-                                                        destination,
-                                                        index)
-                                            
+        kwargs['descr'] = name
+        kwargs['interface'] = interface
+        rule = __salt__['pfsense_filter_rule.add_rule'](**kwargs)
         ret['comment'] = 'Rule {0} was created'.format(name)
         ret['changes'] = rule
         return ret
@@ -100,26 +41,7 @@ def present(name,
     return ret
 
 
-def absent(name,
-           protocol,
-           interface,
-           type,
-           max_src_states='',
-           tagged='',
-           statetimeout='',
-           _max='',
-           max_src_nodes='',
-           max_src_conn='',
-           tag='',
-           os='',
-           _id='',
-           disabled=False,
-           log=False,
-           tracker=None,
-           ipprotocol=None,
-           statetype=None,
-           source=None,
-           destination=None):
+def absent(name, interface):
     '''
     '''
 
@@ -128,26 +50,7 @@ def absent(name,
            'result': True,
            'comment': ''}
 
-    rule = __salt__['pfsense_filter_rule.get_rule'](name,
-                                                    protocol,
-                                                    interface,
-                                                    type,
-                                                    max_src_states,
-                                                    tagged,
-                                                    statetimeout,
-                                                    _max,
-                                                    max_src_nodes,
-                                                    max_src_conn,
-                                                    tag,
-                                                    os,
-                                                    _id,
-                                                    disabled,
-                                                    log,
-                                                    tracker,
-                                                    ipprotocol,
-                                                    statetype,
-                                                    source,
-                                                    destination)
+    rule = __salt__['pfsense_filter_rule.get_rule'](name, interface)
 
     # No present case
     if not rule:
@@ -159,25 +62,6 @@ def absent(name,
         ret['result'] = None
         return ret
 
-    rule = __salt__['pfsense_filter_rule.rm_rule'](name,
-                                                   protocol,
-                                                   interface,
-                                                   type,
-                                                   max_src_states,
-                                                   tagged,
-                                                   statetimeout,
-                                                   _max,
-                                                   max_src_nodes,
-                                                   max_src_conn,
-                                                   tag,
-                                                   os,
-                                                   _id,
-                                                   disabled,
-                                                   log,
-                                                   tracker,
-                                                   ipprotocol,
-                                                   statetype,
-                                                   source,
-                                                   destination)
+    rule = __salt__['pfsense_filter_rule.rm_rule'](name, interface)
     ret['comment'] = 'Rule {0} was removed'.format(name)
     return ret

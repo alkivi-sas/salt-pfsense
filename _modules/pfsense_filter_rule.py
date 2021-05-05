@@ -41,70 +41,99 @@ def _get_client():
 class FilterRule:
     """Object that represent a Filter rule in pfSense."""
 
-    # Describe xml key vs object key
-    available_keys = {
-        'max-src-states': 'max_src_states',
-        'tagged': 'tagged',
-        'statetimeout': 'statetimeout',
-        'descr': 'descr', 
-        'statetype': 'statetype',
-        'max': '_max',
-        'max-src-nodes': 'max_src_nodes',
-        'max-src-conn': 'max_src_conn',
-        'tag': 'tag',
-        'tracker': 'tracker',
-        'type': 'type',
-        'interface': 'interface',
-        'ipprotocol': 'ipprotocol',
-        'os': 'os',
-        'id': '_id',
-        'protocol': 'protocol',
+    keys = {
+        'max-src-states': {
+            'default': '',
+            'type': 'str',
+        },
+        'tagged': {
+            'default': '',
+            'type': 'str',
+        },
+        'statetimeout': {
+            'default': '',
+            'type': 'str',
+        },
+        'descr': {
+            'required': True,
+            'type': 'str',
+        },
+        'statetype': {
+            'default': 'keep state',
+            'valid': ['keep state', 'sloppy state', 'synproxy state', 'none'],
+        },
+        'max': {
+            'default': '',
+            'type': 'str',
+        },
+        'max-src-nodes': {
+            'default': '',
+            'type': 'str',
+        },
+        'max-src-conn': {
+            'default': '',
+            'type': 'str',
+        },
+        'tag': {
+            'default': '',
+            'type': 'str',
+        },
+        'type': {
+            'default': 'pass',
+            'valid': ['pass', 'block', 'match', 'reject'],
+        },
+        'interface': {
+            'required': True,
+            'type': 'str',
+        },
+        'ipprotocol': {
+            'default': 'inet', 
+            'valid': ['inet', 'inet46', 'inet6'],
+        },
+        'os': {
+            'default': '',
+            'type': 'str',
+        },
+        'id': {
+            'default': '',
+            'type': 'str',
+        },
+        'protocol': {
+            'default': 'any',
+            'valid': ['any', 'tcp', 'udp', 'tcp/udp', 'icmp', 'igmp', 'ospf', 'esp', 'ah', 'gre', 'pim', 'sctp', 'pfsync', 'carp'],
+        },
+        'disabled': {
+            'default': False,
+            'type': 'bool',
+        },
+        'log': {
+            'default': False,
+            'type': 'bool',
+        },
+        'source': {
+            'default': {'any': ''},
+        },
+        'destination': {
+            'default': {'any': ''},
+        },
+        'floating': {
+            'default': False,
+            'type': 'bool',
+        },
+        'quick': {
+            'default': False,
+            'type': 'bool',
+        },
+        'direction': {
+            'required': False,
+            'valid': ['any', 'in', 'out'],
+        },
+        'tracker': {
+            'required': False,
+            'type': 'int'
+        }
     }
-    boolean_keys = {
-        'disabled': 'disabled',
-        'log': 'log',
-    }
-    special_keys = {
-        'source': 'source',
-        'destination': 'destination',
-    }
-    test_keys = {
-        'max-src-states': 'max_src_states',
-        'tagged': 'tagged',
-        'statetimeout': 'statetimeout',
-        'descr': 'descr', 
-        'statetype': 'statetype',
-        'max': '_max',
-        'max-src-nodes': 'max_src_nodes',
-        'max-src-conn': 'max_src_conn',
-        'tag': 'tag',
-        'type': 'type',
-        'interface': 'interface',
-        'ipprotocol': 'ipprotocol',
-        'os': 'os',
-        'id': '_id',
-        'protocol': 'protocol',
-    }
 
-    @staticmethod
-    def get_default_source():
-        return {'any': ''}
-
-    @staticmethod
-    def get_default_destination():
-        return {'any': ''}
-
-    @staticmethod
-    def get_default_statetype():
-        return 'keep state'
-
-    @staticmethod
-    def get_defaut_ipprotocol():
-        return 'inet'
-
-    @staticmethod
-    def get_default_tracker():
-        return str(int(time.time()))
 
     @staticmethod
     def clean_source(source):
@@ -120,81 +149,23 @@ class FilterRule:
                 destination['port'] = str(destination['port'])
         return dict(destination)
 
-    def __init__(self,
-                 descr,
-                 protocol,
-                 interface,
-                 type,
-                 max_src_states='',
-                 tagged='',
-                 statetimeout='',
-                 _max='',
-                 max_src_nodes='',
-                 max_src_conn='',
-                 tag='',
-                 os='',
-                 _id='',
-                 disabled=False,
-                 log=False,
-                 tracker=None,
-                 ipprotocol=None,
-                 statetype=None,
-                 source=None,
-                 destination=None):
+    def __init__(self, **kwargs):
+        for key, configuration in self.keys.items():
+            required = configuration.get('required', False)
+            value = configuration.get('default', None)
+            if key in kwargs:
+                value = kwargs[key]
+            elif required:
+                raise CommandExecutionError('Key {0} is mandatory'.format(key))
 
-        if ipprotocol is None:
-            ipprotocol = self.get_defaut_ipprotocol()
-
-        if statetype is None:
-            statetype = self.get_default_statetype()
-
-        if source is None:
-            source = self.get_default_source()
-        else:
-            source = self.clean_source(source)
-
-        if destination is None:
-            destination = self.get_default_destination()
-        else:
-            destination = self.clean_destination(destination)
-
-        if tracker is None:
-            tracker = self.get_default_tracker()
-
-        self.descr = descr
-        self.protocol = protocol
-        self.interface = interface
-        self.max_src_states = max_src_states
-        self.tagged = tagged
-        self.statetimeout = statetimeout
-        self._max = _max
-        self.max_src_nodes = max_src_nodes
-        self.max_src_conn = max_src_conn
-        self.tag = tag
-        self.tracker = tracker
-        self.type = type
-        self.os = os
-        self._id = _id
-        self.disabled = disabled
-        self.log = log
-        self.ipprotocol = ipprotocol
-        self.statetype = statetype
-        self.source = source
-        self.destination = destination
-
-
+            if value is not None:
+                setattr(self, key, value)
+                
     def __eq__(self, other):
         """
         Custom eq method to see if two rules match.
 
-        A rule match if 
-        protocol
-        target
-        interface
-        local_port
-        source
-        destination
-        are equals
+        A rule match if descr match
         """
         return other.descr == self.descr
 
@@ -202,28 +173,25 @@ class FilterRule:
     def from_config(cls, config):
         # Generic keys
         params = {}
-        for key, self_key in cls.available_keys.items():
-            if key in config:
-                if config[key]:
-                    params[self_key] = config[key]
+        for key, configuration in cls.keys.items():
+            type = configuration.get('type', None)
+            if type in [None, 'str']:
+                if key in config:
+                    if config[key]:
+                        params[key] = config[key]
+                    else:
+                        params[key] = ''
                 else:
-                    params[self_key] = ''
+                    params[key] = ''
+            elif type == 'bool':
+                if key in config:
+                    params[key] = True
+                else:
+                    params[key] = False
+            elif type == 'int':
+                params[key] = int(config[key])
             else:
-                params[self_key] = ''
-                
-
-        # Boolean
-        for key, self_key in cls.boolean_keys.items():
-            if key in config:
-                params[self_key] = True
-            else:
-                params[self_key] = False
-
-        # Source and destination
-        for key, self_key in cls.special_keys.items():
-            if key in config:
-                params[self_key] = config[key]
-
+                raise CommandExecutionError('Should not come here adazdaza')
         return cls(**params)
 
     def to_string(self):
@@ -264,13 +232,36 @@ class FilterRule:
     def to_dict(self):
         """Return a dict representing the rule."""
         object_dict = {}
-        for key, self_key in self.available_keys.items():
-            object_dict[key] = str(getattr(self, self_key))
-        for key, self_key in self.boolean_keys.items():
-            if getattr(self, self_key):
-                object_dict[key] = ''
-        for key, self_key in self.special_keys.items():
-            object_dict[key] = getattr(self, self_key)
+        for key, configuration in self.keys.items():
+            type = configuration.get('type', None)
+            if not hasattr(self, key):
+                continue
+
+            value = None
+            if type in [None, 'str']:
+                value = getattr(self, key)
+            elif type == 'bool':
+                if getattr(self, key):
+                    value = ''
+            elif type == 'int':
+                value = str(getattr(self, key))
+            else:
+                raise CommandExecutionError('Should not come here dzadazdazdza')
+
+            if key == 'protocol' and value == 'any':
+                value = None
+
+            if value is None:
+                continue
+
+            if key == 'source':
+                value = self.clean_source(value)
+            elif key == 'destination':
+                value = self.clean_destination(value)
+            object_dict[key] = value
+
+        if 'tracker' not in object_dict:
+            object_dict['tracker'] = str(int(time.time()))
         return object_dict
 
 
@@ -301,7 +292,10 @@ def list_rules(interface=None, out=None):
         rule = FilterRule.from_config(data)
 
         if interface is not None:
-            if rule.interface != interface:
+            if interface == 'floating':
+                if not rule.floating:
+                    continue
+            elif rule.interface != interface:
                 continue
 
         if out == 'string':
@@ -328,152 +322,36 @@ def get_rule_at_index(index, interface):
     return rules[index]
 
 def get_rule(descr,
-             protocol,
-             interface,
-             type,
-             max_src_states='',
-             tagged='',
-             statetimeout='',
-             _max='',
-             max_src_nodes='',
-             max_src_conn='',
-             tag='',
-             os='',
-             _id='',
-             disabled=False,
-             log=False,
-             tracker=None,
-             ipprotocol=None,
-             statetype=None,
-             source=None,
-             destination=None):
+             interface):
     """Return the rule dict."""
     # Fix integer to string if needed
-    test_rule = FilterRule(descr,
-                           protocol,
-                           interface,
-                           type,
-                           max_src_states,
-                           tagged,
-                           statetimeout,
-                           _max,
-                           max_src_nodes,
-                           max_src_conn,
-                           tag,
-                           os,
-                           _id,
-                           disabled,
-                           log,
-                           tracker,
-                           ipprotocol,
-                           statetype,
-                           source,
-                           destination)
-
     present_rules = list_rules(out='object', interface=interface)
     for rule in present_rules:
-        if rule == test_rule:
+        if rule.descr == descr:
             return rule.to_dict()
     return None
 
 
 def has_rule(descr,
-             protocol,
-             interface,
-             type,
-             max_src_states='',
-             tagged='',
-             statetimeout='',
-             _max='',
-             max_src_nodes='',
-             max_src_conn='',
-             tag='',
-             os='',
-             _id='',
-             disabled=False,
-             log=False,
-             tracker=None,
-             ipprotocol=None,
-             statetype=None,
-             source=None,
-             destination=None):
+             interface):
     """Return True or False."""
     # Fix integer to string if needed
-    test_rule = FilterRule(descr,
-                           protocol,
-                           interface,
-                           type,
-                           max_src_states,
-                           tagged,
-                           statetimeout,
-                           _max,
-                           max_src_nodes,
-                           max_src_conn,
-                           tag,
-                           os,
-                           _id,
-                           disabled,
-                           log,
-                           tracker,
-                           ipprotocol,
-                           statetype,
-                           source,
-                           destination)
-
-    present_rules = list_rules(out='object', interface=interface)
-    if test_rule in present_rules:
-        return True
-    else:
+    rule = get_rule(descr, interface)
+    if rule is None:
         return False
+    else:
+        return True
 
 
-def add_rule(descr,
-             protocol,
-             interface,
-             type,
-             max_src_states='',
-             tagged='',
-             statetimeout='',
-             _max='',
-             max_src_nodes='',
-             max_src_conn='',
-             tag='',
-             os='',
-             _id='',
-             disabled=False,
-             log=False,
-             tracker=None,
-             ipprotocol=None,
-             statetype=None,
-             source=None,
-             destination=None,
-             index=0):
+def add_rule(index=0, **kwargs):
     """Return Rule."""
     # Fix integer to string if needed
-    test_rule = FilterRule(descr,
-                           protocol,
-                           interface,
-                           type,
-                           max_src_states,
-                           tagged,
-                           statetimeout,
-                           _max,
-                           max_src_nodes,
-                           max_src_conn,
-                           tag,
-                           os,
-                           _id,
-                           disabled,
-                           log,
-                           tracker,
-                           ipprotocol,
-                           statetype,
-                           source,
-                           destination)
+    test_rule = FilterRule(**kwargs)
 
-    present_rules = list_rules(out='object', interface=interface)
-    if test_rule in present_rules:
-        return test_rule.to_dict()
+    present_rules = list_rules(out='object', interface=test_rule.interface)
+    existing_rule = get_rule(test_rule.descr, test_rule.interface)
+    if existing_rule is not None:
+        return existing_rule.to_dict()
 
     client = _get_client()
     config = client.config_get()
@@ -489,7 +367,7 @@ def add_rule(descr,
     }
 
     # Now found base index for interface
-    base_index = _get_index_for_interface(interface)
+    base_index = _get_index_for_interface(test_rule.interface)
     final_index = base_index + index
 
     logger.debug('rule at index {0}'.format(final_index))
@@ -520,30 +398,10 @@ def _get_index_for_interface(interface):
     return index
 
 
-def rm_rule(descr, protocol, target, interface, local_port, disabled=False, source=None, destination=None, index=0):
+def rm_rule(descr, interface):
     """Return Rule."""
-    test_rule = FilterRule(descr,
-                           protocol,
-                           interface,
-                           type,
-                           max_src_states,
-                           tagged,
-                           statetimeout,
-                           _max,
-                           max_src_nodes,
-                           max_src_conn,
-                           tag,
-                           os,
-                           _id,
-                           disabled,
-                           tracker,
-                           ipprotocol,
-                           statetype,
-                           source,
-                           destination)
-
-    present_rules = list_rules(out='object')
-    if test_rule not in present_rules:
+    rule = get_rule(descr, interface)
+    if rule is None:
         return True
 
     client = _get_client()
@@ -552,7 +410,7 @@ def rm_rule(descr, protocol, target, interface, local_port, disabled=False, sour
     new_filter_rules = []
     for rule in config['filter']['rule']:
         obj_rule = FilterRule.from_config(rule)
-        if obj_rule == test_rule:
+        if obj_rule.descr == descr and obj_rule.interface == interface:
             continue
         new_filter_rules.append(rule)
 

@@ -143,6 +143,25 @@ def list_wan_interfaces():
     return wan_interfaces
 
 
+def list_lan_interfaces():
+    '''
+    Return the list of lan interfaces.
+    LAN interfaces are interface without gateway or pppoe
+    CLI Example:
+    .. code-block:: bash
+        salt '*' pfsense_interface.list_interfaces
+    '''
+    interfaces = list_interfaces()
+    lan_interfaces = {}
+    for interface, data in interfaces.items():
+        if 'gateway' in data and data['gateway']:
+            continue
+        elif 'ipaddr' in data and data['ipaddr'] == 'pppoe':
+            continue
+        lan_interfaces[interface] = data
+    return lan_interfaces
+
+
 def get_interface(interface):
     '''
     Return the data associated to an interface

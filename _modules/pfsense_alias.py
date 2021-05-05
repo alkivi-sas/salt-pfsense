@@ -224,6 +224,10 @@ def set_target(alias, target, type=None, descr=None, detail=None, url=None, upda
     elif result['message'] != 'ok':
         logger.warning(result)
         raise CommandExecutionError('Problem when updating alias')
+
+    response = client.send_event('filter reload')
+    if response['message'] != 'ok':
+        raise CommandExecutionError('unable to filter reload', response['message'])
     return True
 
 
@@ -254,4 +258,9 @@ def rm_alias(alias):
     elif result['message'] != 'ok':
         logger.warning(result)
         raise CommandExecutionError('Problem when updating alias')
+
+    response = client.send_event('filter reload')
+    if response['message'] != 'ok':
+        raise CommandExecutionError('unable to filter reload', response['message'])
+
     return True
