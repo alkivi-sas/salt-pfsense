@@ -38,6 +38,25 @@ def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
 
+def format_source_and_destination(data):
+    if isinstance(data, dict):
+        if 'port' in data:
+            data['port'] = str(data['port'])
+    return dict(data)
+
+
+def format_protocol(data):
+    if data == 'any':
+        return None
+    return data
+
+
+def format_bool_to_yes(data):
+    if data:
+        return 'yes'
+    return None
+
+
 class FilterRule:
     """Object that represent a Filter rule in pfSense."""
 
@@ -101,6 +120,7 @@ class FilterRule:
         'protocol': {
             'default': 'any',
             'valid': ['any', 'tcp', 'udp', 'tcp/udp', 'icmp', 'igmp', 'ospf', 'esp', 'ah', 'gre', 'pim', 'sctp', 'pfsync', 'carp'],
+            'formater': format_protocol
         },
         'disabled': {
             'default': False,
@@ -112,17 +132,21 @@ class FilterRule:
         },
         'source': {
             'default': {'any': ''},
+            'formater': format_source_and_destination 
         },
         'destination': {
             'default': {'any': ''},
+            'formater': format_source_and_destination 
         },
         'floating': {
             'default': False,
             'type': 'bool',
+            'formater': format_bool_to_yes
         },
         'quick': {
             'default': False,
             'type': 'bool',
+            'formater': format_bool_to_yes
         },
         'direction': {
             'required': False,
@@ -133,21 +157,6 @@ class FilterRule:
             'type': 'int'
         }
     }
-
-
-    @staticmethod
-    def clean_source(source):
-        if isinstance(source, dict):
-            if 'port' in source:
-                source['port'] = str(source['port'])
-        return dict(source)
-
-    @staticmethod
-    def clean_destination(destination):
-        if isinstance(destination, dict):
-            if 'port' in destination:
-                destination['port'] = str(destination['port'])
-        return dict(destination)
 
     def __init__(self, **kwargs):
         for key, configuration in self.keys.items():
@@ -166,8 +175,69 @@ class FilterRule:
         Custom eq method to see if two rules match.
 
         A rule match if descr match
+        and floating match
+        and interface match
         """
-        return other.descr == self.descr
+        if self.descr != other.descr:
+            return False
+        if self.floating != other.floating:
+            return False
+        if self.floating:
+            return True
+        if self.interface != other.interface:
+            return False
+        return True
+
+    def is_valid(self):
+        # Basic from keys
+        for key, configuration in self.keys.items():
+            type = configuration.get('type', None)
+            valid = configuration.get('valid', None)
+
+            # No key, continue
+            if not hasattr(self, key):
+                continue
+
+            # Key value from type
+            value = None
+            if type in [None, 'str']:
+                value = getattr(self, key)
+            elif type == 'bool':
+                if getattr(self, key):
+                    value = ''
+            elif type == 'int':
+                value = str(getattr(self, key))
+            else:
+                raise CommandExecutionError('Should not come here type is {0}'.format(type))
+
+        # Protocol and ports
+        if self.protocol not in ['tcp', 'udp', 'tcp/udp']:
+            for key in ['source', 'destination']:
+                if 'port' in getattr(self, key):
+                    return "You can't use ports on protocol other than tcp, udp or tcp/udp"
+
+        # Quick
+        if self.quick:
+            if not self.floating:
+                return 'If quick is enabled, you also need floating'
+
+        return True
+
+
+    def match_index(self, other):
+        """Check if a rule has the same interface or floating."""
+        # Not the same floating : False
+        if self.floating != other.floating:
+            return False
+        # Floating is present -> this is the index
+        if self.floating:
+            return True
+
+        # Interface
+        if self.interface != other.interface:
+            return False
+
+        return True
 
     @classmethod
     def from_config(cls, config):
@@ -232,11 +302,17 @@ class FilterRule:
     def to_dict(self):
         """Return a dict representing the rule."""
         object_dict = {}
+
         for key, configuration in self.keys.items():
             type = configuration.get('type', None)
+            formater = configuration.get('formater', None)
+            valid = configuration.get('valid', None)
+
+            # No key, continue
             if not hasattr(self, key):
                 continue
 
+            # Key value from type
             value = None
             if type in [None, 'str']:
                 value = getattr(self, key)
@@ -248,24 +324,22 @@ class FilterRule:
             else:
                 raise CommandExecutionError('Should not come here dzadazdazdza')
 
-            if key == 'protocol' and value == 'any':
-                value = None
+            # Format value if necessary
+            if formater is not None:
+                value = formater(value)
 
             if value is None:
                 continue
-
-            if key == 'source':
-                value = self.clean_source(value)
-            elif key == 'destination':
-                value = self.clean_destination(value)
             object_dict[key] = value
 
+        # Tracker is compute automatically
         if 'tracker' not in object_dict:
             object_dict['tracker'] = str(int(time.time()))
+
         return object_dict
 
 
-def list_rules(interface=None, out=None):
+def list_rules(interface=None, floating=None, out=None):
     '''
     Return the rules found in filter
         [array]
@@ -292,10 +366,11 @@ def list_rules(interface=None, out=None):
         rule = FilterRule.from_config(data)
 
         if interface is not None:
-            if interface == 'floating':
-                if not rule.floating:
-                    continue
-            elif rule.interface != interface:
+            if rule.interface != interface:
+                continue
+
+        if floating is not None:
+            if rule.floating != floating:
                 continue
 
         if out == 'string':
@@ -308,32 +383,20 @@ def list_rules(interface=None, out=None):
     return ret
 
 
-def get_rule_at_index(index, interface):
-    '''
-    Return the rule
-    CLI Example:
-    .. code-block:: bash
-        salt '*' pfsense_interfaces.get_target interface
-    '''
-    rules = list_rules(interface=interface)
-    if len(rules) <= index:
-        raise CommandExecutionError('Wrong index must be in 0 and {0}'.format(len(rules) - 1))
-
-    return rules[index]
-
-def get_rule(descr,
-             interface):
+def get_rule(descr, interface=None, floating=None):
     """Return the rule dict."""
     # Fix integer to string if needed
-    present_rules = list_rules(out='object', interface=interface)
+    if interface is None and floating is None:
+        raise CommandExecutionError('You must pass either interface or floating')
+
+    present_rules = list_rules(out='object', interface=interface, floating=floating)
     for rule in present_rules:
         if rule.descr == descr:
-            return rule.to_dict()
+            return rule
     return None
 
 
-def has_rule(descr,
-             interface):
+def has_rule(descr, interface=None, floating=None):
     """Return True or False."""
     # Fix integer to string if needed
     rule = get_rule(descr, interface)
@@ -353,6 +416,10 @@ def add_rule(index=0, **kwargs):
     if existing_rule is not None:
         return existing_rule.to_dict()
 
+    is_rule_valid = test_rule.is_valid()
+    if is_rule_valid is not True:
+        raise CommandExecutionError('Rule is not valid because "{0}"'.format(is_rule_valid))
+
     client = _get_client()
     config = client.config_get()
 
@@ -367,13 +434,8 @@ def add_rule(index=0, **kwargs):
     }
 
     # Now found base index for interface
-    base_index = _get_index_for_interface(test_rule.interface)
+    base_index = _get_index_for_rule(test_rule)
     final_index = base_index + index
-
-    logger.debug('rule at index {0}'.format(final_index))
-    logger.debug(patch_filter_rule['filter']['rule'][final_index])
-    logger.debug('rule to add')
-    logger.debug(test_rule.to_dict())
 
     patch_filter_rule['filter']['rule'].insert(final_index, test_rule.to_dict())
     response = client.config_patch(patch_filter_rule)
@@ -387,21 +449,24 @@ def add_rule(index=0, **kwargs):
     return test_rule.to_dict()
 
 
-def _get_index_for_interface(interface):
+def _get_index_for_rule(wanted_rule):
     """Return index of the first rule matching interface."""
     index = 0
     present_rules = list_rules(out='object')
     for rule in present_rules:
-        if rule.interface == interface:
+        if rule.match_index(wanted_rule):
             return index
         index += 1
     return index
 
 
-def rm_rule(descr, interface):
+def rm_rule(descr, interface=None, floating=None):
     """Return Rule."""
-    rule = get_rule(descr, interface)
-    if rule is None:
+    if interface is None and floating is None:
+        raise CommandExecutionError('You must pass either interface or floating')
+
+    rule_to_delete = get_rule(descr, interface=interface, floating=floating)
+    if rule_to_delete is None:
         return True
 
     client = _get_client()
@@ -410,7 +475,7 @@ def rm_rule(descr, interface):
     new_filter_rules = []
     for rule in config['filter']['rule']:
         obj_rule = FilterRule.from_config(rule)
-        if obj_rule.descr == descr and obj_rule.interface == interface:
+        if obj_rule == rule_to_delete:
             continue
         new_filter_rules.append(rule)
 

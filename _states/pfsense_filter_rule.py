@@ -12,7 +12,7 @@ from salt.ext import six
 logger = logging.getLogger(__name__)
 
 
-def present(name, interface, index=0, **kwargs):
+def present(name, interface=None, floating=None, index=0, **kwargs):
     '''
     '''
     ret = {'name': name,
@@ -20,7 +20,7 @@ def present(name, interface, index=0, **kwargs):
            'result': True,
            'comment': ''}
 
-    rule = __salt__['pfsense_filter_rule.get_rule'](name, interface)
+    rule = __salt__['pfsense_filter_rule.get_rule'](name, interface, floating)
 
     # Not present case
     if not rule:
@@ -31,7 +31,10 @@ def present(name, interface, index=0, **kwargs):
 
         # Add rule
         kwargs['descr'] = name
-        kwargs['interface'] = interface
+        if interface is not None:
+            kwargs['interface'] = interface
+        if floating is not None:
+            kwargs['floating'] = floating
         rule = __salt__['pfsense_filter_rule.add_rule'](**kwargs)
         ret['comment'] = 'Rule {0} was created'.format(name)
         ret['changes'] = rule
@@ -41,7 +44,7 @@ def present(name, interface, index=0, **kwargs):
     return ret
 
 
-def absent(name, interface):
+def absent(name, interface=None, floating=None):
     '''
     '''
 
@@ -50,7 +53,7 @@ def absent(name, interface):
            'result': True,
            'comment': ''}
 
-    rule = __salt__['pfsense_filter_rule.get_rule'](name, interface)
+    rule = __salt__['pfsense_filter_rule.get_rule'](name, interface, floating)
 
     # No present case
     if not rule:
@@ -62,6 +65,6 @@ def absent(name, interface):
         ret['result'] = None
         return ret
 
-    rule = __salt__['pfsense_filter_rule.rm_rule'](name, interface)
+    rule = __salt__['pfsense_filter_rule.rm_rule'](name, interface, floating)
     ret['comment'] = 'Rule {0} was removed'.format(name)
     return ret
