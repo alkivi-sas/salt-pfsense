@@ -57,6 +57,12 @@ def format_bool_to_yes(data):
     return None
 
 
+def format_interface(data):
+    if data == '':
+        return None
+    return data
+
+
 class FilterRule:
     """Object that represent a Filter rule in pfSense."""
 
@@ -102,8 +108,9 @@ class FilterRule:
             'valid': ['pass', 'block', 'match', 'reject'],
         },
         'interface': {
-            'required': True,
+            'default': '',
             'type': 'str',
+            'formater': format_interface
         },
         'ipprotocol': {
             'default': 'inet', 
@@ -221,6 +228,11 @@ class FilterRule:
             if not self.floating:
                 return 'If quick is enabled, you also need floating'
 
+        # If not floating then interface
+        if not self.floating:
+            if not hasattr(self, 'interface') or not self.interface:
+                return 'Interface is missing'
+
         return True
 
 
@@ -316,17 +328,22 @@ class FilterRule:
             value = None
             if type in [None, 'str']:
                 value = getattr(self, key)
+                if formater is not None:
+                    value = formater(value)
             elif type == 'bool':
-                if getattr(self, key):
+                value = getattr(self, key)
+                if formater is not None:
+                    value = formater(value)
+                elif value:
                     value = ''
+                else:
+                    value = None
             elif type == 'int':
                 value = str(getattr(self, key))
+                if formater is not None:
+                    value = formater(value)
             else:
                 raise CommandExecutionError('Should not come here dzadazdazdza')
-
-            # Format value if necessary
-            if formater is not None:
-                value = formater(value)
 
             if value is None:
                 continue
@@ -399,7 +416,7 @@ def get_rule(descr, interface=None, floating=None):
 def has_rule(descr, interface=None, floating=None):
     """Return True or False."""
     # Fix integer to string if needed
-    rule = get_rule(descr, interface)
+    rule = get_rule(descr, interface, floating)
     if rule is None:
         return False
     else:
@@ -411,8 +428,7 @@ def add_rule(index=0, **kwargs):
     # Fix integer to string if needed
     test_rule = FilterRule(**kwargs)
 
-    present_rules = list_rules(out='object', interface=test_rule.interface)
-    existing_rule = get_rule(test_rule.descr, test_rule.interface)
+    existing_rule = get_rule(test_rule.descr, test_rule.interface, test_rule.floating)
     if existing_rule is not None:
         return existing_rule.to_dict()
 

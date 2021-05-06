@@ -35,7 +35,7 @@ def present(name, interface=None, floating=None, index=0, **kwargs):
             kwargs['interface'] = interface
         if floating is not None:
             kwargs['floating'] = floating
-        rule = __salt__['pfsense_filter_rule.add_rule'](**kwargs)
+        rule = __salt__['pfsense_filter_rule.add_rule'](index=index, **kwargs)
         ret['comment'] = 'Rule {0} was created'.format(name)
         ret['changes'] = rule
         return ret
