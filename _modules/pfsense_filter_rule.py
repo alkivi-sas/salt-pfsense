@@ -271,7 +271,8 @@ class FilterRule:
                 else:
                     params[key] = False
             elif type == 'int':
-                params[key] = int(config[key])
+                if key in config:
+                    params[key] = int(config[key])
             else:
                 raise CommandExecutionError('Should not come here adazdaza')
         return cls(**params)
