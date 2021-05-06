@@ -67,4 +67,5 @@ def absent(name, interface=None, floating=None):
 
     rule = __salt__['pfsense_filter_rule.rm_rule'](name, interface, floating)
     ret['comment'] = 'Rule {0} was removed'.format(name)
+    ret['changes'] = 'Rule removed'
     return ret
