@@ -370,20 +370,42 @@ def list_cert_with_status():
 
     client = _get_client()
     config = client.config_get()
+    result = {}
 
+    # Get all certs and keep only user type
+    certs = list_cert(all_data=True)
+    for refid, data in certs.items():
+        if not data.get('type', None) == 'user':
+            continue
+        result[refid] = {'cert_descr': data['descr'], 'status': 'active'}
+
+    # Get all CRL and mark revoked cert as such
+    crl = list_crl(all_data=True)
+    for crlid, data in crl.items():
+        for cert in data.get('cert', []):
+            refid = cert['refid']
+            result[refid]['status'] = 'revoked'
+
+    # Add user data
     users_certificates = {}
     for user in config['system']['user']:
         uid = user['uid']
         cert = user.get('cert', None)
         if cert:
-            users_certificates[cert] = dict(user)
-    return users_certificates
+            if isinstance(cert, list):
+                for c in cert:
+                    users_certificates[c] = dict(user)
+            else:
+                users_certificates[cert] = dict(user)
 
-    certs = list_cert(all_data=True)
-    crl = list_crl(all_data=True)
+    for refid, data in users_certificates.items():
+        if refid not in result:
+            logger.warning('Weird')
+            continue
+        result[refid]['user'] = data['descr']
+        result[refid]['descr'] = data['name']
 
-    test = {'users': users_certificates, 'certs':certs, 'crl': crl}
-    return test
+    return result
 
 
 def _increase_ca_serial(caref):
