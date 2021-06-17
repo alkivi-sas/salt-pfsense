@@ -48,6 +48,10 @@ if (!$cert_result) {
     echo $cert_result;
     die(1);
 }
-vpn_ipsec_configure();
+if (function_exists('vpn_ipsec_configure')) {
+    vpn_ipsec_configure();
+} else {
+    ipsec_configure();
+}
 echo json_encode($cert);
 exit;

@@ -47,7 +47,11 @@ if (cert_unrevoke($thiscert, $thiscrl)) {
 	echo $savemsg;
 	// refresh IPsec and OpenVPN CRLs
 	openvpn_refresh_crls();
-	vpn_ipsec_configure();
+    if (function_exists('vpn_ipsec_configure')) {
+        vpn_ipsec_configure();
+    } else {
+        ipsec_configure();
+    }
 	write_config($savemsg);
 } else {
 	$savemsg = sprintf(gettext('Failed to delete Certificate %1$s from CRL %2$s.'), $certname, $crlname);

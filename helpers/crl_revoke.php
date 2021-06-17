@@ -41,7 +41,11 @@ if (!is_crl_internal($crl)) {
 
 cert_revoke($cert, $crl, $reason);
 openvpn_refresh_crls();
-vpn_ipsec_configure();
+if (function_exists('vpn_ipsec_configure')) {
+    vpn_ipsec_configure();
+} else {
+    ipsec_configure();
+}
 write_config("Revoked cert {$cert['descr']} in CRL {$crl['descr']}.");
 echo "Certificate revoked";
 exit;
