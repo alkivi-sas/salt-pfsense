@@ -62,6 +62,11 @@ def list_static_maps(interface):
         ret[static_map['mac']] = static_map
     return ret
 
+def _sync_ha():
+    cmd = ['/etc/rc.filter_synchronize']
+    __salt__['cmd.run_all'](cmd, python_shell=False)
+
+
 
 def get_static_map(interface, mac):
     '''
@@ -163,6 +168,7 @@ def set_static_map(interface, mac, ipaddr, hostname, **kwargs):
     elif result['message'] != 'ok':
         logger.warning(result)
         raise CommandExecutionError('Problem when updating static_map')
+    _sync_ha()
     return True
 
 
@@ -193,4 +199,5 @@ def rm_static_map(interface, mac):
     elif result['message'] != 'ok':
         logger.warning(result)
         raise CommandExecutionError('Problem when updating static_map')
+    _sync_ha()
     return True

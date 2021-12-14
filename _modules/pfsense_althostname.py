@@ -37,6 +37,11 @@ def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
 
+def _sync_ha():
+    cmd = ['/etc/rc.filter_synchronize']
+    __salt__['cmd.run_all'](cmd, python_shell=False)
+
+
 def list_hostnames():
     '''
     Return the alternatives hostnames of the webgui
@@ -98,6 +103,7 @@ def add_hostname(hostname):
     elif result['message'] != 'ok':
         logger.warning(result)
         raise CommandExecutionError('Problem when updating alias')
+    _sync_ha()
     return True
 
 
@@ -129,4 +135,5 @@ def rm_hostname(hostname):
     elif result['message'] != 'ok':
         logger.warning(result)
         raise CommandExecutionError('Problem when updating alias')
+    _sync_ha()
     return True

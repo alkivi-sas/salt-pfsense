@@ -37,6 +37,11 @@ def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
 
+def _sync_ha():
+    cmd = ['/etc/rc.filter_synchronize']
+    __salt__['cmd.run_all'](cmd, python_shell=False)
+
+
 def list_aliases():
     '''
     Return the aliases found in the aliases file in this format::
@@ -225,9 +230,13 @@ def set_target(alias, target, type=None, descr=None, detail=None, url=None, upda
         logger.warning(result)
         raise CommandExecutionError('Problem when updating alias')
 
+    _sync_ha()
+
     response = client.send_event('filter reload')
     if response['message'] != 'ok':
         raise CommandExecutionError('unable to filter reload', response['message'])
+
+
     return True
 
 
@@ -258,6 +267,8 @@ def rm_alias(alias):
     elif result['message'] != 'ok':
         logger.warning(result)
         raise CommandExecutionError('Problem when updating alias')
+
+    _sync_ha()
 
     response = client.send_event('filter reload')
     if response['message'] != 'ok':

@@ -36,6 +36,11 @@ def __virtual__():
 def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
+
+def _sync_ha():
+    cmd = ['/etc/rc.filter_synchronize']
+    __salt__['cmd.run_all'](cmd, python_shell=False)
+
 def list_users():
     client = _get_client()
     config = client.config_get()
@@ -110,6 +115,7 @@ def add_user(username, attributes={}):
         raise CommandExecutionError('unable to add user', response['message'])
 
     _increment_next_id('uid')
+    _sync_ha()
 
     uid = int(user['uid'])
     shell = '/sbin/tcsh'
@@ -166,6 +172,7 @@ def manage_user(username, attributes):
     response = client.config_patch(patch_system_user)
     if response['message'] != 'ok':
         raise CommandExecutionError('unable to manage user', response['message'])
+    _sync_ha()
 
     if 'descr' in attributes:
         descr = attributes['descr']
@@ -208,6 +215,7 @@ def add_cert(username, refid):
     response = client.config_patch(patch_system_user)
     if response['message'] != 'ok':
         raise CommandExecutionError('unable to manage user', response['message'])
+    _sync_ha()
     return True
 
 
@@ -296,6 +304,7 @@ def remove_user(username):
     response = client.config_patch(patch_system_user)
     if response['message'] != 'ok':
         raise CommandExecutionError('unable to remove user', response['message'])
+    _sync_ha()
 
     system_user = __salt__['user.delete'](username, remove=True, force=True)
 
@@ -341,6 +350,7 @@ def add_group(groupname):
         raise CommandExecutionError('unable to add group', response['message'])
 
     _increment_next_id('gid')
+    _sync_ha()
 
     return group
 
@@ -383,6 +393,7 @@ def manage_group(groupname, attributes):
     response = client.config_patch(patch_system_group)
     if response['message'] != 'ok':
         raise CommandExecutionError('unable to manage group', response['message'])
+    _sync_ha()
 
     return group
 
@@ -404,6 +415,7 @@ def remove_group(groupname):
     response = client.config_patch(patch_system_group)
     if response['message'] != 'ok':
         raise CommandExecutionError('unable to remove group', response['message'])
+    _sync_ha()
 
     return group
 

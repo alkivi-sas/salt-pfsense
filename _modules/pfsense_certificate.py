@@ -105,6 +105,11 @@ def get_crl_revoked_list(refid, all_data=False):
     return ret
 
 
+def _sync_ha():
+    cmd = ['/etc/rc.filter_synchronize']
+    __salt__['cmd.run_all'](cmd, python_shell=False)
+
+
 def add_cert_to_crl(crlid, certid, reason=5):
     """Add a cert to a crl."""
     crl = get_crl(crlid)
@@ -119,6 +124,8 @@ def add_cert_to_crl(crlid, certid, reason=5):
 
     result = __salt__['cmd.run_all'](cmd,
                                      python_shell=False)
+
+    _sync_ha()
 
     if result['retcode'] != 0:
         raise CommandExecutionError(result['stdout'])
@@ -216,6 +223,8 @@ def add_user_certificate(username, caref=None):
     # add certid to user
     __salt__['pfsense_user.add_cert'](username, cert['refid'])
 
+    _sync_ha()
+
     return cert, None
 
 
@@ -281,6 +290,7 @@ def add_cert(refid, descr, caref, crt, prv, cert_type):
         raise CommandExecutionError('unable to remove group', response['message'])
 
     _increase_ca_serial(caref)
+    _sync_ha()
 
     return cert
 
