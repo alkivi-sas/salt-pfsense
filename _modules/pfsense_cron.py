@@ -11,6 +11,7 @@ import base64
 import hashlib
 import binascii
 import logging
+import sys
 
 # Import Salt libs
 import salt.utils.files
@@ -24,6 +25,8 @@ from salt.exceptions import (
 # Import 3rd-party libs
 from salt.ext import six
 from salt.ext.six.moves import range
+
+PY3 = sys.version_info[0] >= 3
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +47,8 @@ def _generate_identifier(cron):
     for key in ['command', 'mday', 'hour', 'who', 'month', 'minute', 'wday']:
         string_array.append(str(cron[key]))
     string_to_hash = ''.join(string_array)
+    if PY3:
+        string_to_hash = string_to_hash.encode('utf-8')
     return hashlib.sha256(string_to_hash).hexdigest()
 
 
