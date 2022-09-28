@@ -49,7 +49,7 @@ if (!$ca) {
 
 # We use only SSL based ...
 $usrid = '';
-$advancedoptions = '';
+$advancedoptions = base64_decode($config['installedpackages']['vpn_openvpn_export']['serverconfig']['item'][0]["advancedoptions"]);
 $verifyservercn = 'auto';
 $blockoutsidedns = '0';
 $legacy = '1';
