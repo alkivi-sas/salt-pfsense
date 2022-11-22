@@ -259,6 +259,8 @@ def export_openvpn_config(username, addr, vpnid=None, caref=None, conf_type='con
         cert = __salt__['pfsense_certificate.get_cert'](certid)
         if not cert:
             raise CommandExecutionError('Weird shit, user have cert {0} but it does not exists on system'.format(certid))
+        if not 'caref' in cert:
+            continue
         if cert['caref'] == caref:
             wanted_certid = certid
             break
