@@ -234,6 +234,12 @@ if (substr($conf_type, 0, 4) == "inst") {
     $exp_path = openvpn_client_export_installer($srvid, $usrid, $crtid, $useaddr, $verifyservercn, $blockoutsidedns, $legacy, $randomlocalport, $usetoken, $password, $proxy, $advancedoptions, substr($conf_type, 5), $usepkcs11, $pkcs11providers, $pkcs11id, $silent);
 }
 
+if (($conf_type == "conf") || (substr($conf_type, 0, 10) == "confinline")) {
+    $file = '/tmp/' . $exp_name;
+    file_put_contents($file, $exp_path);
+    $exp_path = $file;
+}
+
 if (!$exp_path) {
     echo "Failed to export config files!";
     die(1);
