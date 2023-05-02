@@ -51,7 +51,7 @@ def present(
         wanted_data['priv'] = priv
 
 
-    user = __salt__['pfsense_user.get_user'](name)
+    userid, user = __salt__['pfsense_user.get_user'](name)
 
     # Not present case
     if not user:
@@ -118,7 +118,7 @@ def absent(name):
            'result': True,
            'comment': ''}
 
-    user = __salt__['pfsense_user.get_user'](name)
+    userid, user = __salt__['pfsense_user.get_user'](name)
 
     # No present case
     if not user:
