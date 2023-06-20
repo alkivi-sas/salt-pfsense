@@ -21,9 +21,6 @@ from salt.exceptions import (
     SaltInvocationError,
 )
 
-# Import 3rd-party libs
-from salt.ext import six
-
 try:
     from ipaddress import IPv4Interface
 except ImportError:

@@ -22,10 +22,6 @@ from salt.exceptions import (
     SaltInvocationError,
 )
 
-# Import 3rd-party libs
-from salt.ext import six
-from salt.ext.six.moves import range
-
 PY3 = sys.version_info[0] >= 3
 
 logger = logging.getLogger(__name__)

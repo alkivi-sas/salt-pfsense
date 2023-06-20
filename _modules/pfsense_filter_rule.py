@@ -22,10 +22,6 @@ from salt.exceptions import (
     SaltInvocationError,
 )
 
-# Import 3rd-party libs
-from salt.ext import six
-from salt.ext.six.moves import range
-
 logger = logging.getLogger(__name__)
 
 def __virtual__():
