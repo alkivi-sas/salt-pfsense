@@ -51,9 +51,6 @@ from __future__ import absolute_import, unicode_literals, print_function
 import re
 import sys
 
-# Import 3rd-party libs
-from salt.ext import six
-
 
 def _present_test(user, name, enc, comment, options, source, config, fingerprint_hash_type):
     '''
@@ -69,7 +66,7 @@ def _present_test(user, name, enc, comment, options, source, config, fingerprint
                 fingerprint_hash_type=fingerprint_hash_type)
         if keys:
             comment = ''
-            for key, status in six.iteritems(keys):
+            for key, status in keys.items():
                 if status == 'exists':
                     continue
                 comment += 'Set to {0}: {1}\n'.format(status, key)

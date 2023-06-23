@@ -6,9 +6,6 @@ import re
 import sys
 import logging
 
-# Import 3rd-party libs
-from salt.ext import six
-
 logger = logging.getLogger(__name__)
 
 

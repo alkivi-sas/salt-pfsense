@@ -5,9 +5,6 @@ from __future__ import absolute_import, unicode_literals, print_function
 import re
 import sys
 
-# Import 3rd-party libs
-from salt.ext import six
-
 
 def present(
         name,
