@@ -78,3 +78,33 @@ def get_server(vpnid, all_data=False):
     if vpnid not in servers:
         return None
     return servers[vpnid]
+
+
+def get_server_hostname(vpnid):
+    """Return default settings if presents."""
+    ret = None
+
+    vpnid = str(vpnid)
+    servers = list_servers(False)
+    if vpnid not in servers:
+        return None
+
+    client = _get_client()
+    config = client.config_get()
+
+    if 'installedpackages' not in config:
+        return ret
+
+    config = config['installedpackages']
+    if 'vpn_openvpn_export' not in config:
+        return ret
+
+    config = config['vpn_openvpn_export']
+    if 'serverconfig' not in config:
+        return ret
+
+    for server in config['serverconfig']['item']:
+        if server['server'] == vpnid:
+            return server['useaddr_hostname']
+    return ret
+
