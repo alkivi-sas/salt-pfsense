@@ -193,12 +193,12 @@ if (substr($conf_type, 0, 4) == "conf") {
             $exp_name = urlencode($exp_name . "-config.ovpn");
             $expformat = "baseconf";
     }
-    $exp_path = openvpn_client_export_config($srvid, $usrid, $crtid, $useaddr, $verifyservercn, $blockoutsidedns, $legacy, $randomlocalport, $usetoken, $nokeys, $proxy, $expformat, $password, false, false, $advancedoptions, $usepkcs11, $pkcs11providers, $pkcs11id);
+    $exp_path = openvpn_client_export_config($srvid, $usrid, $crtid, $useaddr, $verifyservercn, $blockoutsidedns, $legacy, $randomlocalport, $usetoken, $nokeys, $proxy, $expformat, $password, false, false, $advancedoptions, $usepkcs11, $pkcs11providers, $pkcs11id, $silent);
 }
 
 if ($conf_type == "visc") {
     $exp_name = urlencode($exp_name . "-Viscosity.visc.zip");
-    $exp_path = viscosity_openvpn_client_config_exporter($srvid, $usrid, $crtid, $useaddr, $verifyservercn, $blockoutsidedns, $legacy, $randomlocalport, $usetoken, $password, $proxy, $advancedoptions, $usepkcs11, $pkcs11providers, $pkcs11id);
+    $exp_path = viscosity_openvpn_client_config_exporter($srvid, $usrid, $crtid, $useaddr, $verifyservercn, $blockoutsidedns, $legacy, $randomlocalport, $usetoken, $password, $proxy, $advancedoptions, $usepkcs11, $pkcs11providers, $pkcs11id, $silent);
 }
 
 if (substr($conf_type, 0, 4) == "inst") {
