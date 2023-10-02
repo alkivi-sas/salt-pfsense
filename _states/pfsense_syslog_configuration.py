@@ -2,8 +2,11 @@
 
 # Import python libs
 from __future__ import absolute_import, unicode_literals, print_function
+import logging
 import re
 import sys
+
+logger = logging.getLogger(__name__)
 
 
 def present(
@@ -25,11 +28,12 @@ def present(
             ret['comment'] = 'Key {0} is already OK'.format(name)
         return ret
 
+    logger.warning('Current value is {0} wanted value is {1}'.format(current_value, value))
     if current_value == value:
         ret['comment'] = 'No change needed for key {0}'.format(name)
         return ret
 
     data = __salt__['pfsense_syslog_configuration.set_setting'](name, value)
-    ret['changes'][name] = 'Updated'
-    ret['comment'] = 'Key {0} set to {1}'.format(name, value)
+    ret['changes'][name] = value
+    ret['comment'] = 'Updated !'
     return ret

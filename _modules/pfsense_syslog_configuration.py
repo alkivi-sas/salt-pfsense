@@ -9,6 +9,7 @@ import os
 import re
 import base64
 import hashlib
+import atexit
 import binascii
 import logging
 
@@ -21,6 +22,18 @@ from salt.exceptions import (
     SaltInvocationError,
 )
 
+HAS_CHANGES = False
+BOOLEAN_NAMES = ['reverse',
+        'nologdefaultblock',
+        'nologdefaultpass',
+        'nologbogons',
+        'nologprivatenets',
+        'nolognginx',
+        'rawfilter',
+        'disablelocallogging',
+        'enable',
+        'logall']
+
 logger = logging.getLogger(__name__)
 
 def __virtual__():
@@ -31,6 +44,22 @@ def __virtual__():
 
 def _get_client():
     return pfsense.FauxapiLib(debug=True)
+
+
+def exit_handler():
+    global HAS_CHANGES
+    if HAS_CHANGES:
+        client = _get_client()
+        params = {'function': 'system_syslogd_start'}
+        res = client.function_call(params)
+        logger.warning('system_syslogd_start')
+        logger.warning(res)
+        params = {'function': 'filter_pflog_start', 'args': True}
+        res = client.function_call(params)
+        logger.warning('filter_pflog_start')
+        logger.warning(res)
+    else:
+        logger.warning('No changes')
 
 
 def get_setting(name):
@@ -45,6 +74,11 @@ def get_setting(name):
 
     if name not in config['syslog']:
         return False
+    elif name in BOOLEAN_NAMES:
+        if name in config['syslog']:
+            return True
+        else:
+            return False
     else:
         return config['syslog'][name]
 
@@ -63,44 +97,22 @@ def set_setting(name, value):
     if value is None:
         raise SaltInvocationError('value can not be None')
 
-    current_value = get_setting(name)
-    if current_value == value:
-        return True
 
 
     client = _get_client()
     config = client.config_get()
 
-    boolean_name = ['reverse',
-            'nologdefaultblock',
-            'nologdefaultpass',
-            'nologbogons',
-            'nologprivatenets',
-            'nolognginx',
-            'rawfilter',
-            'disablelocallogging',
-            'enable',
-            'logall',
-            'system',
-            'logfilter',
-            'resolver',
-            'dhcp',
-            'ppp',
-            'auth',
-            'portalauth',
-            'vpn',
-            'dpinger',
-            'routing',
-            'ntpd',
-            'hostapd']
+    current_value = get_setting(name)
+    if current_value == value:
+        return True
 
-    if name in boolean_name:
+    if name in BOOLEAN_NAMES:
         if value:
-            config['system']['webgui'][name] = ''
-        elif name in config['system']['webgui']:
-            del config['system']['webgui'][name]
+            config['syslog'][name] = ''
+        elif name in config['syslog']:
+            del config['syslog'][name]
     else:
-        config['system']['webgui'][name] = value
+        config['syslog'][name] = value
 
     result = client.config_set(config)
 
@@ -109,4 +121,11 @@ def set_setting(name, value):
     elif result['message'] != 'ok':
         logger.warning(result)
         raise CommandExecutionError('Problem when setting {0} to {1}'.format(name, value))
+
+    # reload syslog
+    global HAS_CHANGES
+    HAS_CHANGES = True
+
     return True
+
+atexit.register(exit_handler)
