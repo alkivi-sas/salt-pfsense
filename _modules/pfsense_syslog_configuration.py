@@ -18,22 +18,23 @@ from salt.exceptions import (
 
 HAS_CHANGES = False
 BOOLEAN_NAMES = [
-    'reverse',
-    'nologdefaultblock',
-    'nologdefaultpass',
-    'nologbogons',
-    'nologprivatenets',
-    'nolognginx',
-    'rawfilter',
-    'disablelocallogging',
-    'enable',
-    'logall'
+    "reverse",
+    "nologdefaultblock",
+    "nologdefaultpass",
+    "nologbogons",
+    "nologprivatenets",
+    "nolognginx",
+    "rawfilter",
+    "disablelocallogging",
+    "enable",
+    "logall",
 ]
 
 logger = logging.getLogger(__name__)
 
+
 def __virtual__():
-    if os.path.isfile('/etc/pf.os'):
+    if os.path.isfile("/etc/pf.os"):
         return True
     else:
         return False
@@ -47,49 +48,47 @@ def exit_handler():
     global HAS_CHANGES
     if HAS_CHANGES:
         client = _get_client()
-        params = {'function': 'system_syslogd_start'}
+        params = {"function": "system_syslogd_start"}
         client.function_call(params)
 
-        params = {'function': 'filter_pflog_start', 'args': 'true'}
+        params = {"function": "filter_pflog_start", "args": "true"}
         client.function_call(params)
 
 
 def get_setting(name):
-    '''
+    """
     Return the alternatives hostnames of the webgui
     CLI Example:
     .. code-block:: bash
         salt '*' pfsense_webgui_settings.get_setting nodnsrebindcheck
-    '''
+    """
     client = _get_client()
     config = client.config_get()
 
-    if name not in config['syslog']:
+    if name not in config["syslog"]:
         return False
     elif name in BOOLEAN_NAMES:
-        if name in config['syslog']:
+        if name in config["syslog"]:
             return True
         else:
             return False
     else:
-        return config['syslog'][name]
+        return config["syslog"][name]
 
 
 def set_setting(name, value):
-    '''
+    """
     Add the entry to the list
     exist.
     CLI Example:
     .. code-block:: bash
         salt '*' pfsense_aliases.set_setting nodnsrebindcheck True
-    '''
+    """
 
-    if name == '':
-        raise SaltInvocationError('name can not be an empty string')
+    if name == "":
+        raise SaltInvocationError("name can not be an empty string")
     if value is None:
-        raise SaltInvocationError('value can not be None')
-
-
+        raise SaltInvocationError("value can not be None")
 
     client = _get_client()
     config = client.config_get()
@@ -100,24 +99,29 @@ def set_setting(name, value):
 
     if name in BOOLEAN_NAMES:
         if value:
-            config['syslog'][name] = ''
-        elif name in config['syslog']:
-            del config['syslog'][name]
+            config["syslog"][name] = ""
+        elif name in config["syslog"]:
+            del config["syslog"][name]
     else:
-        config['syslog'][name] = value
+        config["syslog"][name] = value
 
     result = client.config_set(config)
 
-    if 'message' not in result:
-        raise CommandExecutionError('Problem when setting {0} to {1}'.format(name, value))
-    elif result['message'] != 'ok':
+    if "message" not in result:
+        raise CommandExecutionError(
+            "Problem when setting {0} to {1}".format(name, value)
+        )
+    elif result["message"] != "ok":
         logger.warning(result)
-        raise CommandExecutionError('Problem when setting {0} to {1}'.format(name, value))
+        raise CommandExecutionError(
+            "Problem when setting {0} to {1}".format(name, value)
+        )
 
     # reload syslog
     global HAS_CHANGES
     HAS_CHANGES = True
 
     return True
+
 
 atexit.register(exit_handler)
