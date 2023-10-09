@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Import python libs
-from __future__ import absolute_import, unicode_literals, print_function
 import logging
-import re
-import sys
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +25,6 @@ def present(
             ret['comment'] = 'Key {0} is already OK'.format(name)
         return ret
 
-    logger.warning('Current value is {0} wanted value is {1}'.format(current_value, value))
     if current_value == value:
         ret['comment'] = 'No change needed for key {0}'.format(name)
         return ret
