@@ -6,16 +6,10 @@ from __future__ import absolute_import
 
 # Import Python libs
 import os
-import re
-import base64
-import hashlib
 import atexit
-import binascii
 import logging
 
 # Import Salt libs
-import salt.utils.files
-import salt.utils.stringutils
 import pfsense
 from salt.exceptions import (
     CommandExecutionError,
@@ -23,16 +17,18 @@ from salt.exceptions import (
 )
 
 HAS_CHANGES = False
-BOOLEAN_NAMES = ['reverse',
-        'nologdefaultblock',
-        'nologdefaultpass',
-        'nologbogons',
-        'nologprivatenets',
-        'nolognginx',
-        'rawfilter',
-        'disablelocallogging',
-        'enable',
-        'logall']
+BOOLEAN_NAMES = [
+    'reverse',
+    'nologdefaultblock',
+    'nologdefaultpass',
+    'nologbogons',
+    'nologprivatenets',
+    'nolognginx',
+    'rawfilter',
+    'disablelocallogging',
+    'enable',
+    'logall'
+]
 
 logger = logging.getLogger(__name__)
 
@@ -42,8 +38,9 @@ def __virtual__():
     else:
         return False
 
+
 def _get_client():
-    return pfsense.FauxapiLib(debug=True)
+    return pfsense.FauxapiLib.get_singleton(debug=True)
 
 
 def exit_handler():
@@ -51,15 +48,10 @@ def exit_handler():
     if HAS_CHANGES:
         client = _get_client()
         params = {'function': 'system_syslogd_start'}
-        res = client.function_call(params)
-        logger.warning('system_syslogd_start')
-        logger.warning(res)
-        params = {'function': 'filter_pflog_start', 'args': True}
-        res = client.function_call(params)
-        logger.warning('filter_pflog_start')
-        logger.warning(res)
-    else:
-        logger.warning('No changes')
+        client.function_call(params)
+
+        params = {'function': 'filter_pflog_start', 'args': 'true'}
+        client.function_call(params)
 
 
 def get_setting(name):

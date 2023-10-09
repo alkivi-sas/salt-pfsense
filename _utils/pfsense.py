@@ -23,7 +23,7 @@ try:
 except ImportError:
     from urllib import urlencode
 
-FAUXAPI_HOST = '127.0.0.1'
+SINGLETON_INSTANCE = None
 
 log = logging.getLogger(__name__)
 
@@ -47,13 +47,14 @@ class FauxapiLib:
     def __init__(self, host=None, apikey=None, apisecret=None, 
                  use_verified_https=False, debug=False):
 
-        if not host:
-            host = FAUXAPI_HOST
         if not apikey:
             apikey = self._get_apikey()
         
         if not apisecret:
             apisecret = self._get_apisecret(apikey)
+
+        if not host:
+            host = self._get_host(apikey)
 
         self.proto = 'https'
         self.base_url = 'fauxapi/v1'
@@ -65,6 +66,17 @@ class FauxapiLib:
         if not self.use_verified_https:
             requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
+
+    @classmethod
+    def get_singleton(cls, host=None, apikey=None, apisecret=None, 
+                      use_verified_https=False, debug=False):
+        global SINGLETON_INSTANCE
+        if SINGLETON_INSTANCE is not None:
+            return SINGLETON_INSTANCE
+
+        SINGLETON_INSTANCE = cls(host=host, apikey=apikey, apisecret=apisecret,
+                                 use_verified_https=use_verified_https, debug=debug)
+        return SINGLETON_INSTANCE
 
     def _get_apikey(self):
         '''
@@ -83,6 +95,31 @@ class FauxapiLib:
                 if m:
                     return m.group(1)
         raise CommandExecutionError('Unable to extract PFFA key from {0}'.format(credentials))
+
+    def _get_host(self, key):
+        '''Parse /etc/fauxapi/credentials.ini.
+        
+        Return the first line with secret avec key has been found
+        '''
+        credentials = '/etc/fauxapi/credentials.ini'
+        if not os.path.isfile(credentials):
+            raise CommandExecutionError('You must create {0} first'.format(credentials))
+
+        re_pattern = re.compile('^host\s=\s(.*)$')
+        find_key = False
+        with salt.utils.files.fopen(credentials, 'r') as fp_:
+            for line in fp_.readlines():
+                if not find_key:
+                    if key in line:
+                        find_key = True
+                else:
+                    m = re_pattern.search(line)
+                    if m:
+                        return m.group(1)
+        if not find_key:
+            raise CommandExecutionError('Unable to find key {1} in {0}'.format(key, credentials))
+        else:
+            return '127.0.0.1'
 
     def _get_apisecret(self, key):
         '''Parse /etc/fauxapi/credentials.ini.
@@ -216,5 +253,5 @@ class FauxapiLib:
             return json.loads(data)
         except json.JSONDecodeError:
             pass
-        raise PfsenseFauxapiException('Unable to parse response data!', data)
+        raise FauxapiLibException('Unable to parse response data!', data)
 
