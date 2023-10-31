@@ -278,7 +278,10 @@ def _fingerprint(public_key, fingerprint_hash_type):
         )
 
     try:
-        raw_key = base64.b64decode(public_key, validate=True)  # pylint: disable=E1123
+        if PY3:
+            raw_key = base64.b64decode(public_key, validate=True)  # pylint: disable=E1123
+        else:
+            raw_key = base64.b64decode(public_key)  # pylint: disable=E1123
     except binascii.Error:
         return None
 
