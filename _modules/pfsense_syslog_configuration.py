@@ -55,6 +55,15 @@ def exit_handler():
         client.function_call(params)
 
 
+def force_reload():
+    client = _get_client()
+    params = {"function": "system_syslogd_start"}
+    client.function_call(params)
+
+    params = {"function": "filter_pflog_start", "args": "true"}
+    client.function_call(params)
+
+
 def get_setting(name):
     """
     Return the alternatives hostnames of the webgui
