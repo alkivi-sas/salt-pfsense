@@ -353,6 +353,39 @@ class FilterRule:
         return object_dict
 
 
+def enable_logging_for_all_rules():
+    client = _get_client()
+    config = client.config_get()
+
+    actual_rules = []
+    if 'rule' in config['filter']:
+        actual_rules = config['filter']['rule']
+
+    ret = []
+    for rule in actual_rules:
+        if 'log' not in rule:
+            data_rule = FilterRule.from_config(rule)
+            ret.append('Log enabled for {0}'.format(data_rule.to_string()))
+            rule['log'] = ''
+
+
+    patch_filter_rule = {
+        'filter': {
+            'rule': actual_rules,
+        }
+    }
+
+    response = client.config_patch(patch_filter_rule)
+    if response['message'] != 'ok':
+        raise CommandExecutionError('unable to add filter rule', response['message'])
+
+    response = client.send_event('filter reload')
+    if response['message'] != 'ok':
+        raise CommandExecutionError('unable to filter reload', response['message'])
+
+    return ret
+
+
 def list_rules(interface=None, floating=None, out=None):
     '''
     Return the rules found in filter
