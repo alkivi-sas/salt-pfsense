@@ -136,6 +136,9 @@ def add_peer(name,
         if allowip in allowed_ips:
             return f'Peer {peer_name} have the same allowip {allowip}'
 
+    if len(publickey) != 44:
+        return f"Public key is not of length 44, something is wrong"
+
     get_tunnel(tunnel)
 
     client = _get_client()
