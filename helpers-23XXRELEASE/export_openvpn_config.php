@@ -198,7 +198,7 @@ if (substr($conf_type, 0, 4) == "inst") {
     }
 
     $exp_name = urlencode($exp_name);
-    $exp_path = openvpn_client_export_installer($srvid, $usrid, $crtid, $useaddr, $verifyservercn, $blockoutsidedns, $legacy, $bindmode, $usetoken, $password, $p12encryption, $proxy, $advancedoptions, substr($act, 5), $usepkcs11, $pkcs11providers, $pkcs11id, $silent);
+    $exp_path = openvpn_client_export_installer($srvid, $usrid, $crtid, $useaddr, $verifyservercn, $blockoutsidedns, $legacy, $bindmode, $usetoken, $password, $p12encryption, $proxy, $advancedoptions, substr($conf_type, 5), $usepkcs11, $pkcs11providers, $pkcs11id, $silent);
 }
 
 if (($conf_type == "conf") || (substr($conf_type, 0, 10) == "confinline")) {
