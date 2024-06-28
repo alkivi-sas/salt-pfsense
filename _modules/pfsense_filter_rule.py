@@ -540,3 +540,66 @@ def rm_rule(descr, interface=None, floating=None):
         raise CommandExecutionError('unable to filter reload', response['message'])
 
     return True
+
+def patch_rule(descr, interface=None, floating=None, **kwargs):
+    """
+    Patch a rule using kwargs : WIP
+    """
+
+    if interface is None and floating is None:
+        raise CommandExecutionError('You must pass either interface or floating')
+
+    rule_to_patch = get_rule(descr, interface=interface, floating=floating)
+    if rule_to_patch is None:
+        raise CommandExecutionError('Unable to find a rule with description {0}'.format(descr))
+
+    has_changes = False
+    allowed_keys = ["source"]
+    for key, configuration in rule_to_patch.keys.items():
+        if key not in allowed_keys:
+            continue
+        if key in kwargs:
+            current_value = getattr(rule_to_patch, key)
+            wanted_value = kwargs[key]
+            if current_value != wanted_value:
+                has_changes = True
+                break
+
+    if not has_changes:
+        return True
+
+    client = _get_client()
+    config = client.config_get()
+
+    new_filter_rules = []
+    for rule in config['filter']['rule']:
+        obj_rule = FilterRule.from_config(rule)
+        if obj_rule == rule_to_patch:
+            new_rule_dict = obj_rule.to_dict()
+            for key, configuration in rule_to_patch.keys.items():
+                if key not in allowed_keys:
+                    continue
+                if key in kwargs:
+                    current_value = getattr(rule_to_patch, key)
+                    wanted_value = kwargs[key]
+                    if current_value != wanted_value:
+                        new_rule_dict[key] = wanted_value
+            new_filter_rules.append(new_rule_dict)
+        else:
+            new_filter_rules.append(rule)
+
+    patch_filter_rule = {
+        'filter': {
+            'rule': new_filter_rules
+        }
+    }
+
+    response = client.config_patch(patch_filter_rule)
+    if response['message'] != 'ok':
+        raise CommandExecutionError('unable to add filter rule', response['message'])
+
+    response = client.send_event('filter reload')
+    if response['message'] != 'ok':
+        raise CommandExecutionError('unable to filter reload', response['message'])
+
+    return True
