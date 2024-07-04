@@ -430,15 +430,25 @@ def list_rules(interface=None, floating=None, out=None):
     return ret
 
 
-def get_rule(descr, interface=None, floating=None):
+def get_rule(descr=None, interface=None, floating=None, tracker=None):
     """Return the rule dict."""
     # Fix integer to string if needed
+    if descr is None and tracker is None:
+        raise CommandExecutionError('You must pass either descr and tracker')
+
     if interface is None and floating is None:
         raise CommandExecutionError('You must pass either interface or floating')
 
     present_rules = list_rules(out='object', interface=interface, floating=floating)
     for rule in present_rules:
-        if rule.descr == descr:
+        ok_rule = True
+        if descr is not None:
+            if rule.descr != descr:
+                ok_rule = False
+        if tracker is not None:
+            if rule.tracker != int(tracker):
+                ok_rule = False
+        if ok_rule:
             return rule
     return None
 
@@ -541,31 +551,35 @@ def rm_rule(descr, interface=None, floating=None):
 
     return True
 
-def patch_rule(descr, interface=None, floating=None, **kwargs):
+def patch_rule(descr=None, tracker=None, interface=None, floating=None, patch={}):
     """
     Patch a rule using kwargs : WIP
     """
 
+    if descr is None and tracker is None:
+        raise CommandExecutionError('You must pass either descr and tracker')
+
     if interface is None and floating is None:
         raise CommandExecutionError('You must pass either interface or floating')
 
-    rule_to_patch = get_rule(descr, interface=interface, floating=floating)
+    rule_to_patch = get_rule(descr=descr, interface=interface, floating=floating, tracker=tracker)
     if rule_to_patch is None:
-        raise CommandExecutionError('Unable to find a rule with description {0}'.format(descr))
+        raise CommandExecutionError('Unable to find a rule with description {0} and tracker {1}'.format(descr, tracker))
 
     has_changes = False
-    allowed_keys = ["source"]
+    allowed_keys = ["source", "descr"]
     for key, configuration in rule_to_patch.keys.items():
         if key not in allowed_keys:
             continue
-        if key in kwargs:
+        if key in patch:
             current_value = getattr(rule_to_patch, key)
-            wanted_value = kwargs[key]
+            wanted_value = patch[key]
             if current_value != wanted_value:
                 has_changes = True
                 break
 
     if not has_changes:
+        logging.debug("No changes")
         return True
 
     client = _get_client()
@@ -579,9 +593,9 @@ def patch_rule(descr, interface=None, floating=None, **kwargs):
             for key, configuration in rule_to_patch.keys.items():
                 if key not in allowed_keys:
                     continue
-                if key in kwargs:
+                if key in patch:
                     current_value = getattr(rule_to_patch, key)
-                    wanted_value = kwargs[key]
+                    wanted_value = patch[key]
                     if current_value != wanted_value:
                         new_rule_dict[key] = wanted_value
             new_filter_rules.append(new_rule_dict)

@@ -131,10 +131,11 @@ def list_wan_interfaces():
     '''
     interfaces = list_interfaces()
     wan_interfaces = {}
+    wan_ipaddr = ["pppoe", "dhcp"]
     for interface, data in interfaces.items():
         if 'gateway' in data and data['gateway']:
             wan_interfaces[interface] = data
-        elif 'ipaddr' in data and data['ipaddr'] == 'pppoe':
+        elif 'ipaddr' in data and data['ipaddr'] in wan_ipaddr:
             wan_interfaces[interface] = data
     return wan_interfaces
 
@@ -149,10 +150,11 @@ def list_lan_interfaces():
     '''
     interfaces = list_interfaces()
     lan_interfaces = {}
+    wan_ipaddr = ["pppoe", "dhcp"]
     for interface, data in interfaces.items():
         if 'gateway' in data and data['gateway']:
             continue
-        elif 'ipaddr' in data and data['ipaddr'] == 'pppoe':
+        elif 'ipaddr' in data and data['ipaddr'] in wan_ipaddr:
             continue
         lan_interfaces[interface] = data
     return lan_interfaces
