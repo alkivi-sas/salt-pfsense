@@ -30,9 +30,9 @@ def present(
     # Test if needs changes
     changes = {}
     if is_present:
-        is_target_ok = __salt__['pfsense_alias.has_target'](name, target)
+        is_target_ok = __salt__['pfsense_alias.has_target'](name, targets)
         if not is_target_ok:
-            changes['target'] = target
+            changes['target'] = targets
 
         if url is not None:
             current_url = __salt__['pfsense_alias.get_url'](name)

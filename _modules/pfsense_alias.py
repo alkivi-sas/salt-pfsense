@@ -101,9 +101,9 @@ def get_updatefreq(alias):
     return ''
 
 
-def has_target(alias, target):
+def has_target(alias, targets):
     '''
-    Return true if the alias/target is set
+    Return true if the alias/target is set and match exactly targets
     CLI Example:
     .. code-block:: bash
         salt '*' pfsense_aliases.has_target alias target
@@ -111,7 +111,7 @@ def has_target(alias, target):
     if alias == '':
         raise SaltInvocationError('alias can not be an empty string')
 
-    if target == '':
+    if not targets:
         raise SaltInvocationError('target can not be an empty string')
 
     aliases = list_aliases()
@@ -119,16 +119,13 @@ def has_target(alias, target):
         return False
 
     global_presence = True
-    if isinstance(target, list):
-        for t in target:
-            if t not in aliases[alias]['addresses']:
-                global_presence = False
-                break
-    else:
-        if target not in aliases[alias]['addresses']:
-            global_presence = False
 
-    return global_presence
+    wanted_set = set(targets)
+    current_set = set(aliases[alias]["addresses"])
+    if wanted_set != current_set:
+        return False
+    else:
+        return True
 
 
 def set_target(alias, target, type=None, descr=None, detail=None, url=None, updatefreq=None):
@@ -155,10 +152,8 @@ def set_target(alias, target, type=None, descr=None, detail=None, url=None, upda
 
     is_already_ok = True
     current_targets = get_target(alias)
-    for target in targets:
-        if target not in current_targets:
-            is_already_ok = False
-            break
+    if set(current_targets) != set(targets):
+        is_already_ok = False
 
     if url is not None:
         current_url = get_url(alias)
