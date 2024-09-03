@@ -390,7 +390,8 @@ def list_cert_with_status():
     for crlid, data in crl.items():
         for cert in data.get('cert', []):
             refid = cert['refid']
-            result[refid]['status'] = 'revoked'
+            if refid in result:
+                result[refid]['status'] = 'revoked'
 
     # Add user data
     users_certificates = {}
