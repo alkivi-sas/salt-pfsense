@@ -2,7 +2,14 @@
 
 import os
 import re
+import salt.modules.cmdmod
 import salt.utils.files
+
+
+__salt__ = {
+    "cmd.run": salt.modules.cmdmod._run_quiet,
+    "cmd.run_all": salt.modules.cmdmod._run_all_quiet,
+}
 
 
 def __virtual__():
@@ -28,5 +35,9 @@ def pfsense_grains():
 
     if file_exists('/etc/platform'):
         grains['platform'] = file_read('/etc/platform')
+
+    php_command = '''php -r 'require_once("config.inc"); $platform = system_identify_specific_platform(); echo isset($platform["descr"]) ? $platform["descr"] : "non netgate";' '''
+    netgate_model = __salt__["cmd.run"](php_command)
+    grains['netgate_model'] = netgate_model
 
     return grains
