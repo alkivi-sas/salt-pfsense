@@ -4,7 +4,8 @@ require_once('system_be.inc');
 function list_boot_environments_as_json() {
     $handle = libbe_init();
     if (!$handle) {
-        die(json_encode(["error" => "Failed to initialize libbe."]));
+        echo json_encode([]);
+        return;
     }
 
     $bootenvs = [];
