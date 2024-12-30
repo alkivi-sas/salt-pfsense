@@ -23,6 +23,12 @@ $reason = $argv[3];
 
 $crl =& lookup_crl($crlref);
 $cert = lookup_cert($certref);
+if (is_array($crl) && array_key_exists('item', $crl)) {
+    $crl = &$crl["item"];
+}
+if (is_array($cert) && array_key_exists('item', $cert)) {
+    $cert = &$cert["item"];
+}
 
 if (!$crl['caref'] || !$cert['caref']) {
     echo "Both the Certificate and CRL must be specified.\r\n";
