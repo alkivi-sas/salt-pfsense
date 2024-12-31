@@ -23,24 +23,25 @@ $reason = $argv[3];
 
 $crl =& lookup_crl($crlref);
 $cert = lookup_cert($certref);
+$to_check_crl = $crl;
 if (is_array($crl) && array_key_exists('item', $crl)) {
-    $crl = &$crl["item"];
+    $to_check_crl = &$crl["item"];
 }
 if (is_array($cert) && array_key_exists('item', $cert)) {
-    $cert = &$cert["item"];
+    $cert = $cert["item"];
 }
 
-if (!$crl['caref'] || !$cert['caref']) {
+if (!$to_check_crl['caref'] || !$cert['caref']) {
     echo "Both the Certificate and CRL must be specified.\r\n";
     die(1);
 }
 
-if ($crl['caref'] != $cert['caref']) {
+if ($to_check_crl['caref'] != $cert['caref']) {
     echo "CA mismatch between the Certificate and CRL. Unable to Revoke.\r\n";
     die(1);
 }
 
-if (!is_crl_internal($crl)) {
+if (!is_crl_internal($to_check_crl)) {
     echo "Cannot revoke certificates for an imported/external CRL.\r\n";
     die(1);
 }
@@ -52,6 +53,6 @@ if (function_exists('vpn_ipsec_configure')) {
 } else {
     ipsec_configure();
 }
-write_config("Revoked cert {$cert['descr']} in CRL {$crl['descr']}.");
+write_config("Revoked cert {$cert['descr']} in CRL {$to_check_crl['descr']}.");
 echo "Certificate revoked";
 exit;
