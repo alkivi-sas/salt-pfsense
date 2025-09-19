@@ -11,6 +11,7 @@ import base64
 import hashlib
 import binascii
 import logging
+import copy
 
 # Import Salt libs
 import salt.utils.files
@@ -32,9 +33,57 @@ def __virtual__():
 def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
-def _check_interface(interface):
+def _ensure_pending_config_loaded():
+    """
+    Load pfSense config once into __context__ both as original and pending.
+    Pending is mutated by setters; only apply() commits it.
+    """
+    try:
+        ctx = __context__  # noqa: F821 - provided by Salt at runtime
+    except NameError:
+        # Outside Salt runtime; emulate minimal context
+        globals().setdefault('_local_context', {})
+        ctx = _local_context
+
+    if 'pfsense_dhcp_static_map.original_config' in ctx and 'pfsense_dhcp_static_map.pending_config' in ctx:
+        return
+
     client = _get_client()
-    config = client.config_get()
+    full_config = client.config_get()
+    # Keep deep copies to avoid accidental cross-mutation
+    ctx['pfsense_dhcp_static_map.original_config'] = copy.deepcopy(full_config)
+    ctx['pfsense_dhcp_static_map.pending_config'] = copy.deepcopy(full_config)
+
+def _get_pending_config():
+    _ensure_pending_config_loaded()
+    try:
+        return __context__['pfsense_dhcp_static_map.pending_config']  # noqa: F821
+    except NameError:
+        return _local_context['pfsense_dhcp_static_map.pending_config']
+
+def _set_pending_config(new_config):
+    try:
+        __context__['pfsense_dhcp_static_map.pending_config'] = new_config  # noqa: F821
+    except NameError:
+        _local_context['pfsense_dhcp_static_map.pending_config'] = new_config
+
+def _clear_config_cache():
+    try:
+        for k in [
+            'pfsense_dhcp_static_map.original_config',
+            'pfsense_dhcp_static_map.pending_config',
+        ]:
+            __context__.pop(k, None)  # noqa: F821
+    except NameError:
+        if '_local_context' in globals():
+            for k in [
+                'pfsense_dhcp_static_map.original_config',
+                'pfsense_dhcp_static_map.pending_config',
+            ]:
+                _local_context.pop(k, None)
+
+def _check_interface(interface):
+    config = _get_pending_config()
 
     if interface not in config['dhcpd']:
         raise CommandExecutionError('The interface {0} does not have DHCP'.format(interface))
@@ -47,8 +96,7 @@ def list_static_maps(interface):
 
     _check_interface(interface)
 
-    client = _get_client()
-    config = client.config_get()
+    config = _get_pending_config()
 
     ret = {}
     if 'staticmap' not in config['dhcpd'][interface]:
@@ -131,8 +179,8 @@ def set_static_map(interface, mac, ipaddr, hostname, **kwargs):
 
     _check_interface(interface)
 
-    client = _get_client()
-    config = client.config_get()
+    _ensure_pending_config_loaded()
+    config = _get_pending_config()
 
     new_static_maps = []
     to_add = True
@@ -157,14 +205,7 @@ def set_static_map(interface, mac, ipaddr, hostname, **kwargs):
         new_static_maps.append(wanted_data)
 
     config['dhcpd'][interface]['staticmap'] = new_static_maps
-    result = client.config_set(config)
-
-    if 'message' not in result:
-        raise CommandExecutionError('Problem when updating static_map')
-    elif result['message'] != 'ok':
-        logger.warning(result)
-        raise CommandExecutionError('Problem when updating static_map')
-    _sync_ha()
+    _set_pending_config(config)
     return True
 
 
@@ -178,8 +219,8 @@ def rm_static_map(interface, mac):
     if not get_static_map(interface, mac):
         return True
 
-    client = _get_client()
-    config = client.config_get()
+    _ensure_pending_config_loaded()
+    config = _get_pending_config()
 
     new_static_maps = []
     for current_static_map in config['dhcpd'][interface]['staticmap']:
@@ -188,12 +229,33 @@ def rm_static_map(interface, mac):
         new_static_maps.append(current_static_map)
 
     config['dhcpd'][interface]['staticmap'] = new_static_maps
-    result = client.config_set(config)
+    _set_pending_config(config)
+    return True
 
-    if 'message' not in result:
-        raise CommandExecutionError('Problem when updating static_map')
-    elif result['message'] != 'ok':
+def apply():
+    """
+    Commit pending configuration changes to pfSense via FauxAPI in one call.
+    Returns True if changes were applied, False if there were no pending changes.
+    """
+    _ensure_pending_config_loaded()
+    try:
+        original = __context__['pfsense_dhcp_static_map.original_config']  # noqa: F821
+        pending = __context__['pfsense_dhcp_static_map.pending_config']  # noqa: F821
+    except NameError:
+        original = _local_context.get('pfsense_dhcp_static_map.original_config')
+        pending = _local_context.get('pfsense_dhcp_static_map.pending_config')
+
+    if original == pending:
+        # Nothing to do
+        return False
+
+    client = _get_client()
+    result = client.config_set(pending)
+
+    if 'message' not in result or result['message'] != 'ok':
         logger.warning(result)
-        raise CommandExecutionError('Problem when updating static_map')
+        raise CommandExecutionError('Problem when applying pending configuration')
+
     _sync_ha()
+    _clear_config_cache()
     return True
