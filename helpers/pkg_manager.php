@@ -76,9 +76,9 @@ function activate_train($fwbranch) {
             }
 
             // Update configuration to set the desired firmware branch
-            config_set_path('system/pkg_repo_conf_path', $repo['path']);
+            config_set_path('system/pkg_repo_conf_path', $repo['name']);
             write_config(gettext("Saved firmware branch setting."));
-            pkg_switch_repo(g_get('pkg_repos_path'), $repo['name']);
+            pkg_switch_repo();
 
             // Sleep 1 seconds for process to start
             sleep(1);
