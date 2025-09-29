@@ -419,45 +419,12 @@ def list_cert_with_status():
     return result
 
 
-def _normalize_pem_field(value):
-    """Return a base64-encoded string for a cert/key field.
-
-    Accepts either a raw PEM string (with BEGIN/END headers) or an already
-    base64-encoded string. Always returns a canonical base64-encoded string
-    without newlines.
-    """
-    if value is None:
-        return None
-
-    # Ensure string type and strip surrounding whitespace
-    if isinstance(value, bytes):
-        raw_str = value.decode('utf-8', errors='ignore')
-    else:
-        raw_str = str(value)
-    raw_str = raw_str.strip()
-
-    try:
-        # If it looks like PEM, encode the full content
-        if '-----BEGIN' in raw_str:
-            encoded = base64.b64encode(raw_str.encode('utf-8'))
-            return encoded.decode('ascii')
-
-        # Otherwise, try to decode as base64; if it succeeds, re-encode to normalize
-        decoded = base64.b64decode(raw_str, validate=True)  # pylint: disable=E1123
-        reencoded = base64.b64encode(decoded)
-        return reencoded.decode('ascii')
-    except Exception:
-        # Fallback: treat input as raw text that needs encoding
-        encoded = base64.b64encode(raw_str.encode('utf-8'))
-        return encoded.decode('ascii')
-
-
 def patch_cert(refid, crt=None, prv=None, descr=None):
     """Patch an existing certificate's data (crt/prv) by refid.
 
     - Validates that the certificate with the provided refid exists
     - Updates only the provided fields among crt, prv and descr
-    - Accepts both PEM text and base64-encoded strings for crt and prv
+    - Accepts base64-encoded strings for crt and prv
     - Persists changes via config patch and synchronizes HA
 
     Returns True on success, raises CommandExecutionError on failure.
@@ -477,9 +444,9 @@ def patch_cert(refid, crt=None, prv=None, descr=None):
     }
 
     if crt is not None:
-        patch_cert['cert'][cert_index]['crt'] = _normalize_pem_field(crt)
+        patch_cert['cert'][cert_index]['crt'] = crt
     if prv is not None:
-        patch_cert['cert'][cert_index]['prv'] = _normalize_pem_field(prv)
+        patch_cert['cert'][cert_index]['prv'] = prv
     if descr is not None:
         patch_cert['cert'][cert_index]['descr'] = str(descr)
 
