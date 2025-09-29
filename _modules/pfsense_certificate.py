@@ -211,9 +211,9 @@ def add_user_certificate(username, caref=None):
     # add cert to list of certs
     add_cert(refid=cert['refid'],
              descr=cert['descr'],
-             caref=cert['caref'],
              crt=cert['crt'],
              prv=cert['prv'],
+             caref=cert['caref'],
              cert_type=cert['type'])
                 
     # add certid to user
@@ -259,7 +259,7 @@ def get_ca(refid, all_data=False):
         return cas[refid]
 
 
-def add_cert(refid, descr, caref, crt, prv, cert_type):
+def add_cert(refid, descr, crt, prv, caref=None, cert_type=None):
     """Add a certificate to the list."""
     client = _get_client()
     config = client.config_get()
@@ -272,11 +272,14 @@ def add_cert(refid, descr, caref, crt, prv, cert_type):
     cert = {
         'refid': refid,
         'descr': descr,
-        'caref': caref,
         'crt': crt,
         'prv': prv,
-        'type': cert_type,
     }
+    if caref is not None:
+        cert["caref"] = caref
+    if cert_type is not None:
+        cert["type"] = cert_type
+
     certs.append(cert)
     patch_cert = {
         'cert': certs
@@ -285,7 +288,8 @@ def add_cert(refid, descr, caref, crt, prv, cert_type):
     if response['message'] != 'ok':
         raise CommandExecutionError('unable to remove group', response['message'])
 
-    _increase_ca_serial(caref)
+    if caref is not None:
+        _increase_ca_serial(caref)
     _sync_ha()
 
     return cert
