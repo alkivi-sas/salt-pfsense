@@ -101,3 +101,22 @@ def disable(reboot=True):
     return _set_use_if_pppoe(False, reboot=reboot)
 
 
+
+def status():
+    """
+    Return True if <use_if_pppoe></use_if_pppoe> is set under system configuration,
+    False otherwise.
+
+    CLI Example:
+    .. code-block:: bash
+        salt '*' pfsense_if_pppoe.status
+    """
+    client = _get_client()
+    config = client.config_get()
+
+    if 'system' not in config:
+        raise CommandExecutionError('config is not valid: key {0} not found'.format('system'))
+
+    system_cfg = config['system']
+    return 'use_if_pppoe' in system_cfg
+
