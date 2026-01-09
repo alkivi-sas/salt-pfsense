@@ -13,7 +13,7 @@ __salt__ = {
 
 
 def __virtual__():
-    if os.path.isfile('/etc/pf.os'):
+    if os.path.isfile("/etc/inc/pfsense-utils.inc"):
         return True
     else:
         return False
@@ -36,8 +36,11 @@ def pfsense_grains():
     if file_exists('/etc/platform'):
         grains['platform'] = file_read('/etc/platform')
 
-    php_command = '''php -r 'require_once("config.inc"); $platform = system_identify_specific_platform(); echo isset($platform["descr"]) ? $platform["descr"] : "non netgate";' '''
-    netgate_model = __salt__["cmd.run"](php_command)
-    grains['netgate_model'] = netgate_model
+    try:
+        php_command = '''php -r 'require_once("config.inc"); $platform = system_identify_specific_platform(); echo isset($platform["descr"]) ? $platform["descr"] : "non netgate";' '''
+        netgate_model = __salt__["cmd.run"](php_command)
+        grains['netgate_model'] = netgate_model
+    except Exception:
+        pass
 
     return grains
