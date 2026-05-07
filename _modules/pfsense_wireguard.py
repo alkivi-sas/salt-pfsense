@@ -54,11 +54,12 @@ def list_tunnels():
     for tunnel in config['tunnels']['item']:
         addresses = tunnel['addresses']
         data_addresses = []
-        for address in addresses['row']:
-            a = address['address']
-            m = address['mask']
-            descr = address['descr']
-            data_addresses.append({'address': a, 'mask': m, 'descr': descr})
+        if isinstance(addresses, dict):
+            for address in addresses['row']:
+                a = address['address']
+                m = address['mask']
+                descr = address['descr']
+                data_addresses.append({'address': a, 'mask': m, 'descr': descr})
 
         del tunnel['addresses']
         data = tunnel
