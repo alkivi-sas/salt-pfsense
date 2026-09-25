@@ -12,6 +12,19 @@ MCP salt provider). ``key`` is a colon separated path, exactly like
     filter:rule:0:descr
     installedpackages:wireguard:tunnels:item
 
+A ``*`` segment stands for every child of a list (or of a dict), so one call
+returns a column instead of every record -- handy on a firewall with hundreds
+of users or rules. The result is ``{index: value}`` (``{key: value}`` for a
+dict), so two columns of the same list can be joined on the index::
+
+    system:user:*:name          # {"0": "a.breton", "1": ...}
+    system:user:*:cert          # {"0": ["5e6f8a9879121"], ...}
+    filter:rule:*:descr         # every rule description
+    nat:rule:*:destination      # every port forward destination
+
+Children that lack the rest of the path are skipped: ``system:user:*:cert``
+only holds the users that have a certificate.
+
 Sensitive values (passwords, hashes, private keys, PSK, API secrets...) are
 masked by default. Pass ``redact=False`` from the CLI to see them.
 """
@@ -126,14 +139,26 @@ def _split(key, delimiter=DELIMITER):
     return [part for part in key.split(delimiter) if part != ""]
 
 
+WILDCARD = "*"
+
+
 def _traverse(config, parts):
     """Walk ``config`` following ``parts``.
 
-    Returns ``(found, value)``.
+    Returns ``(found, value)``; when not found, ``value`` is the last valid path.
+    A ``*`` part maps the rest of the path over every child of the node.
     """
     node = config
     walked = []
-    for part in parts:
+    for position, part in enumerate(parts):
+        if part == WILDCARD:
+            rest = parts[position + 1:]
+            if isinstance(node, list):
+                node = dict((str(i), child) for i, child in enumerate(node))
+            if isinstance(node, dict):
+                items = [(k, _traverse(v, rest)) for k, v in node.items()]
+                return True, dict((k, value) for k, (found, value) in items if found)
+            return False, DELIMITER.join(walked) or "<root>"
         if isinstance(node, dict):
             if part in node:
                 node = node[part]
@@ -151,9 +176,14 @@ def _traverse(config, parts):
     return True, node
 
 
-def _lookup(key, delimiter=DELIMITER):
-    """Return the raw node at ``key`` or raise."""
+def _lookup(key, delimiter=DELIMITER, redact=False):
+    """Return the node at ``key`` or raise; masked first when ``redact``."""
     config = _get_config()
+    if redact:
+        # Mask the whole tree before walking it: a ``*`` segment can end a path
+        # below a sensitive key (``...:authorizedkeys:*``), where the last part
+        # alone no longer says the values are secret.
+        config = _redact(config)
     parts = _split(key, delimiter)
     found, value = _traverse(config, parts)
     if not found:
@@ -213,14 +243,10 @@ def get(key=None, delimiter=DELIMITER, redact=True):
         salt 'gateway.noza' pfsense_config.get system:hostname
         salt 'gateway.noza' pfsense_config.get interfaces:wan
         salt 'gateway.noza' pfsense_config.get filter:rule:0
+        salt 'gateway.noza' pfsense_config.get 'system:user:*:name'
         salt 'gateway.noza' pfsense_config.get system:user redact=False
     """
-    parts = _split(key, delimiter)
-    value = _lookup(parts, delimiter)
-    if not redact:
-        return value
-    parent = parts[-1] if parts else None
-    return _redact(value, parent)
+    return _lookup(key, delimiter, redact=redact)
 
 
 def tree(key=None, delimiter=DELIMITER):
