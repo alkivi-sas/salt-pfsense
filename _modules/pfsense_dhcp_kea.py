@@ -91,9 +91,13 @@ def _encode(data):
     return base64.b64encode(json.dumps(data, indent=2).encode('utf-8')).decode('utf-8')
 
 
+def _dhcpd(config):
+    dhcpd = config.get('dhcpd')
+    return dhcpd if isinstance(dhcpd, dict) else {}
+
+
 def _dhcp_interfaces(config):
-    dhcpd = config.get('dhcpd') or {}
-    return [name for name, data in dhcpd.items() if isinstance(data, dict) and 'enable' in data]
+    return [name for name, data in _dhcpd(config).items() if isinstance(data, dict) and 'enable' in data]
 
 
 def _number_options(config, interface):
@@ -139,9 +143,10 @@ def get_custom_config(interface=None):
     '''
     config = _get_pending_config()
     if interface is None:
-        return _decode((config.get('kea') or {}).get('custom_kea_config'))
+        kea = config.get('kea')
+        return _decode(kea.get('custom_kea_config') if isinstance(kea, dict) else None)
 
-    if interface not in (config.get('dhcpd') or {}):
+    if interface not in _dhcpd(config):
         raise CommandExecutionError('The interface {0} does not have DHCP'.format(interface))
     return _decode(config['dhcpd'][interface].get('custom_kea_config'))
 
@@ -163,7 +168,7 @@ def set_custom_config(data, interface=None):
         config['kea']['custom_kea_config'] = _encode(data)
         return True
 
-    if interface not in (config.get('dhcpd') or {}):
+    if interface not in _dhcpd(config):
         raise CommandExecutionError('The interface {0} does not have DHCP'.format(interface))
     config['dhcpd'][interface]['custom_kea_config'] = _encode(data)
     return True
