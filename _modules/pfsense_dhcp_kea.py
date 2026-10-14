@@ -6,6 +6,20 @@ ISC custom options (dhcpd:<if>:numberoptions) are converted to Kea custom JSON:
 - kea:custom_kea_config holds the global option-def
 - dhcpd:<if>:custom_kea_config holds the option-data of the interface
 Both are base64 encoded JSON, as written by the webGUI.
+
+Handled options are defined in the pillar, keyed by DHCP code::
+
+    pfsense:
+      dhcp_kea:
+        options:
+          '43':
+            name: unificontroller
+            type: binary
+            format: hex
+          '132':
+            name: yealink-vlan
+            type: string
+            always-send: true
 """
 from __future__ import absolute_import
 
@@ -28,15 +42,7 @@ logger = logging.getLogger(__name__)
 CONTEXT_ORIGINAL = 'pfsense_dhcp_kea.original_config'
 CONTEXT_PENDING = 'pfsense_dhcp_kea.pending_config'
 
-UNIFI_OPTION = 'unificontroller'
-YEALINK_OPTION = 'yealink-vlan'
-
-OPTION_DEF = {
-    'option-def': [
-        {'code': 43, 'name': UNIFI_OPTION, 'space': 'dhcp4', 'type': 'binary'},
-        {'code': 132, 'name': YEALINK_OPTION, 'space': 'dhcp4', 'type': 'string'},
-    ]
-}
+PILLAR_OPTIONS = 'pfsense:dhcp_kea:options'
 
 
 def __virtual__():
@@ -91,9 +97,26 @@ def _encode(data):
     return base64.b64encode(json.dumps(data, indent=2).encode('utf-8')).decode('utf-8')
 
 
+def _dhcpd(config):
+    dhcpd = config.get('dhcpd')
+    return dhcpd if isinstance(dhcpd, dict) else {}
+
+
 def _dhcp_interfaces(config):
-    dhcpd = config.get('dhcpd') or {}
-    return [name for name, data in dhcpd.items() if isinstance(data, dict) and 'enable' in data]
+    return [name for name, data in _dhcpd(config).items() if isinstance(data, dict) and 'enable' in data]
+
+
+def _options():
+    options = __salt__['config.get'](PILLAR_OPTIONS, {})
+    return {str(code): option for code, option in options.items()}
+
+
+def _option_def():
+    options = _options()
+    return {'option-def': [
+        {'code': int(code), 'name': options[code]['name'], 'space': 'dhcp4', 'type': options[code]['type']}
+        for code in sorted(options, key=int)
+    ]}
 
 
 def _number_options(config, interface):
@@ -139,9 +162,10 @@ def get_custom_config(interface=None):
     '''
     config = _get_pending_config()
     if interface is None:
-        return _decode((config.get('kea') or {}).get('custom_kea_config'))
+        kea = config.get('kea')
+        return _decode(kea.get('custom_kea_config') if isinstance(kea, dict) else None)
 
-    if interface not in (config.get('dhcpd') or {}):
+    if interface not in _dhcpd(config):
         raise CommandExecutionError('The interface {0} does not have DHCP'.format(interface))
     return _decode(config['dhcpd'][interface].get('custom_kea_config'))
 
@@ -163,7 +187,7 @@ def set_custom_config(data, interface=None):
         config['kea']['custom_kea_config'] = _encode(data)
         return True
 
-    if interface not in (config.get('dhcpd') or {}):
+    if interface not in _dhcpd(config):
         raise CommandExecutionError('The interface {0} does not have DHCP'.format(interface))
     config['dhcpd'][interface]['custom_kea_config'] = _encode(data)
     return True
@@ -172,29 +196,34 @@ def set_custom_config(data, interface=None):
 def numberoptions_to_kea(interface):
     '''
     Convert the ISC custom options of the interface to Kea option-data.
-    Only options 43 (UniFi controller) and 132 (Yealink VLAN) are handled,
+    Only options defined in the pillar (pfsense:dhcp_kea:options) are handled,
     any other option raises an error.
     CLI Example:
     .. code-block:: bash
         salt '*' pfsense_dhcp_kea.numberoptions_to_kea lan
     '''
     config = _get_pending_config()
+    options = _options()
     option_data = []
     for item in _number_options(config, interface):
+        number = item.get('number')
+        if number not in options:
+            raise CommandExecutionError(
+                'Option {0} on {1} is not handled by the Kea migration'.format(number, interface))
+        option = options[number]
         value = base64.b64decode(item.get('value', '')).decode('utf-8')
-        if item.get('number') == '43':
+        data = value
+        if option.get('format') == 'hex':
             data = value.replace(':', '').upper()
             try:
                 bytes.fromhex(data)
             except ValueError:
                 raise CommandExecutionError(
-                    'Option 43 on {0} is not hex: {1}'.format(interface, value))
-            option_data.append({'name': UNIFI_OPTION, 'data': data})
-        elif item.get('number') == '132':
-            option_data.append({'name': YEALINK_OPTION, 'data': value, 'always-send': True})
-        else:
-            raise CommandExecutionError(
-                'Option {0} on {1} is not handled by the Kea migration'.format(item.get('number'), interface))
+                    'Option {0} on {1} is not hex: {2}'.format(number, interface, value))
+        entry = {'name': option['name'], 'data': data}
+        if option.get('always-send'):
+            entry['always-send'] = True
+        option_data.append(entry)
 
     if not option_data:
         return None
@@ -231,10 +260,11 @@ def migration_changes():
 
     if interfaces_data:
         current = get_custom_config()
-        if current != OPTION_DEF:
+        wanted = _option_def()
+        if current != wanted:
             if current is not None:
                 raise CommandExecutionError('Kea already has a different global custom config: {0}'.format(current))
-            changes['global'] = {'old': current, 'new': OPTION_DEF}
+            changes['global'] = {'old': current, 'new': wanted}
 
     if get_backend() != 'kea':
         changes['dhcpbackend'] = {'old': get_backend(), 'new': 'kea'}
