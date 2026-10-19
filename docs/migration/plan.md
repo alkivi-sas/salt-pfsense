@@ -72,7 +72,7 @@ Les points ci-dessous ont une issue inconnue a priori. Chacun reçoit une hypoth
 | **V3** | **Écriture et application séparées.** `apply=false` par défaut met le changement en attente. Certains modèles sont `always_apply`. `FirewallRule` n'a pas de subsystem, donc `GET /firewall/apply` peut répondre « applied » à tort. | Un state `apply` par domaine, déclenché par `onchanges`, réduit le nombre de reloads sans perdre de cohérence. | Mesure du nombre de reloads pf et de la durée de run, avant et après. | Au plus 1 reload par domaine et par run ; état appliqué vérifié par lecture pf. |
 | **V4** | **Couverture incomplète.** Aucun endpoint pour : PPPoE kernel, althostnames, sshguard, boot environments, paquets sudo et zabbix-agent, passerelles par serveur DNS (`dnsNgw`), restauration de config. Endpoints partiels pour WebGUI et SSH. | Un helper PHP générique `config_get_path`/`config_set_path` couvre les manques plus durablement qu'un endpoint custom, car les endpoints custom sont effacés à chaque mise à jour du paquet. | Prototype des deux options ; cycle mise à jour du paquet → highstate. | Option retenue survit à 3 cycles d'upgrade sans intervention manuelle. |
 | **V5** | **Équivalence sémantique.** pfrest injecte des valeurs par défaut (`tracker` horodaté en lecture seule, `created_by`, `detail` d'alias, `icmptype`) et change des formats (`interface` en liste pour les règles, `source` en chaîne, `authorizedkeys` en clair, `password` en clair haché côté serveur). | Un diff normalisé de `config.xml` avec une liste d'exclusions explicite suffit comme oracle. | Rejouer chaque scénario sur les deux backends. | Écarts restants = 0 hors registre documenté. |
-| **V6** | **Hétérogénéité des versions.** pfrest v2.10.x ne couvre que CE 2.8.1/2.9.0 et Plus 25.11.1+ ; v2.7.7 couvre CE 2.8.0 et Plus 24.11–26.03 ; v2.4.3 couvre CE 2.7.2 et Plus 24.03. CE 2.7.0/2.7.1 et Plus 23.09 n'ont aucun pfrest v2. L'API change entre mineures (2.5, 2.7, 2.9, 2.10). | Une version pfrest épinglée par branche pfSense, plus une couche d'adaptation limitée aux champs qui changent. | Lab multi-versions ; tests de contrat sur le schéma OpenAPI de chaque version épinglée. | Suite de tests verte sur chaque version de la matrice. |
+| **V6** | **Hétérogénéité des versions.** pfrest v2.10.x ne couvre que CE 2.8.1/2.9.0 et Plus 25.11.1+ ; v2.7.7 couvre CE 2.8.0 et Plus 24.11–26.03 ; v2.4.3 couvre CE 2.7.2 et Plus 24.03. CE 2.7.0/2.7.1 et Plus 23.09 n'ont aucun pfrest v2. L'API change entre mineures (2.5, 2.7, 2.9, 2.10). Périmètre retenu : pfSense sur FreeBSD 14, 15 ou 16 uniquement (voir `versions.md`). | Une seule version pfrest épinglée (v2.10.2) pour tout le périmètre, après mise à jour des quelques pare-feux sur des versions non couvertes. Les montées de version de pfrest passent par une suite de contrat. | Lab sur chaque base (CE 2.8.1, CE 2.9.0, Plus 26.07) et chaque architecture (amd64, arm64, armv7) ; tests de contrat sur le schéma OpenAPI de la version épinglée et de la suivante. | Suite de tests verte sur chaque base et architecture du périmètre. |
 | **V7** | **Bootstrap sans secret humain.** La première clé API exige normalement une auth Basic avec un compte admin. Or pfrest ne stocke que le hash de la clé dans `config.xml`. | Salt peut générer la clé, en écrire le hash et créer l'utilisateur dédié par helper local, sans jamais manipuler le mot de passe admin. | Bootstrap sur lab vierge, puis vérification de l'auth `X-API-Key` et des privilèges. | Bootstrap idempotent, clé jamais visible dans les logs ni dans `changes`. |
 | **V8** | **Traduction sémantique ISC → Kea.** Les deux serveurs n'ont pas le même modèle d'options : ISC a des `numberoptions` typées par interface ; Kea demande une `option-def` globale typée plus une `option-data` par sous-réseau, avec des encodages différents (binaire en hexadécimal, chaîne, `always-send`). Le failover ISC n'a pas d'équivalent direct (Kea HA). pfrest expose le choix du backend (`services/dhcp_server/backend`) et les static mappings communs, mais probablement pas le JSON Kea personnalisé (à vérifier sur l'OpenAPI). | Une table de traduction fermée, déclarée en pillar (options connues seulement, refus explicite sinon), donne un service DHCP identique vu du client. | Captures DHCP (`tcpdump -vv port 67`) avant et après migration sur le lab : offres comparées option par option, pour un client Wi-Fi et un téléphone IP. | Offres DHCP identiques (options, valeurs, bail) sur 100 % des scénarios ; 0 migration silencieuse d'une configuration non gérée. |
 
@@ -106,7 +106,7 @@ Pour chaque tâche : objectif, actions, livrable, critère de fin et commits pr�
     - au-delà → upgrade pfSense préalable.
 - Livrable : `docs/migration/versions.md`, qui classe chaque pare-feu dans une colonne cible.
 - Critère de fin : 100 % du parc classé.
-- Décision attendue : version plancher supportée. Proposition : CE 2.8.0 / Plus 24.11, sans backend pfrest v1.
+- Décision prise : seules les versions sur FreeBSD 14, 15 ou 16 sont supportées (CE 2.7+, Plus 23.01+) ; les autres restent sur la couche actuelle, sans backend pfrest v1. Résultat dans `versions.md` : 159 pare-feux dans le périmètre, 47 hors périmètre.
 
 **T0.2 Inventaire d'usage**
 - Actions :
@@ -174,7 +174,7 @@ Commits :
 
 **T1.3 Lab**
 - Actions :
-  - Monter des VM pfSense CE 2.8.1 et CE 2.9.0, plus une Plus 25.11.1 si le parc en contient. Seules les versions de la matrice T0.1 entrent dans le lab.
+  - Monter des VM pfSense CE 2.8.1, CE 2.9.0 et Plus 26.07 (amd64), plus un boîtier arm64 et un boîtier armv7 en Plus 26.07. Ces bases et architectures sont celles du périmètre (`versions.md`).
   - Installer sur chacune un minion Salt, FauxAPI et pfrest côte à côte.
   - Prévoir des snapshots nommés `clean`, `fauxapi`, `pfrest`.
   - Écrire un script `tests/lab/reset.sh` qui restaure un snapshot.
@@ -529,7 +529,9 @@ Une recette par state, chacune avec un exemple complet et réaliste :
 - Critère de fin : 100 % des pare-feux migrables sur Kea, captures avant et après archivées.
 
 **T7.4 Pare-feux hors matrice**
-- Actions : ils restent sur le backend FauxAPI jusqu'à leur upgrade pfSense (planifié séparément), puis entrent dans une vague.
+- Actions :
+  - Les pare-feux du périmètre sur une version non couverte par v2.10.2 (CE 2.7.x, Plus 25.11) passent d'abord en CE 2.8.1/2.9.0 ou Plus 26.07, puis entrent dans une vague.
+  - Les pare-feux hors périmètre (FreeBSD < 14) restent sur FauxAPI, sans évolution.
 
 **T7.5 Indicateurs**
 - Actions : relever pour chaque vague les indicateurs de la section dédiée.
@@ -539,10 +541,10 @@ Commits : uniquement de la documentation (`docs(migration): wave N report`) et l
 ### Lot 8 — Décommissionnement et capitalisation (≈ 4 j/h)
 
 **T8.1 Retrait de FauxAPI**
-- Préalable : 100 % du parc en pfrest depuis 30 jours.
+- Préalable : 100 % du périmètre (FreeBSD ≥ 14) en pfrest depuis 30 jours.
 - Actions :
-  - Supprimer `FauxapiLib` et les branches `fauxapi` des modules.
-  - Désinstaller FauxAPI du parc (state `absent`) et supprimer `/etc/fauxapi/credentials.ini`.
+  - Désinstaller FauxAPI des pare-feux du périmètre (state `absent`) et supprimer `/etc/fauxapi/credentials.ini`.
+  - Supprimer `FauxapiLib` et les branches `fauxapi` des modules seulement quand aucun pare-feu hors périmètre ne reste en service (mis à jour ou remplacé). D'ici là, le backend FauxAPI est gelé : aucune évolution, corrections de sécurité uniquement.
 - Commits :
   - `refactor(utils): drop fauxapi backend`
   - `feat(fauxapi): uninstall state`

@@ -35,3 +35,13 @@ Une entrée par séance de travail : date, lot et tâche, verrous concernés, ce
   - `dry_run` uniquement en v2.10.2 ; export OpenVPN absent en v2.4.3.
   - JSON Kea personnalisé non exposé dans aucune version (V4, V8).
 - **T0.6 :** en attente, la lecture de la configuration DHCP du parc n'est pas autorisée dans la session.
+
+## 2026-10-19 — Lot 0 : périmètre et inventaire DHCP
+
+- **Périmètre :** seules les versions de pfSense sur FreeBSD 14, 15 ou 16 sont retenues.
+  - 159 pare-feux sont dans le périmètre et 47 en sortent.
+  - Une seule version pfrest est épinglée, v2.10.2 (V6).
+- **T0.6 :** lecture autorisée, puis relevé DHCP de 204 pare-feux sur 206 (2 hors ligne).
+  - 121 sont déjà sous Kea, 14 sont migrables automatiquement.
+  - 3 nécessitent l'option 66 et 9 ont un failover ISC à migrer à la main.
+  - Conséquence pour V8 : la table de traduction doit être étendue à l'option 66, à valider par capture en lab.
