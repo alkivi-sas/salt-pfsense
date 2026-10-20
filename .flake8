@@ -1,3 +1,4 @@
 [flake8]
 max-line-length = 120
 extend-ignore = E203
+builtins = __salt__,__opts__,__context__,__pillar__,__grains__

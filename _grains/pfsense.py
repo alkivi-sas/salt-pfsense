@@ -32,6 +32,16 @@ def pfsense_grains():
 
     if file_exists('/etc/version'):
         grains['version'] = file_read('/etc/version')
+        # Raw base and edition: '26.07-RELEASE' -> 26.07 / Plus, '2.8.1-RELEASE' -> 2.8.1 / CE
+        with salt.utils.files.fopen('/etc/version', 'r') as file_obj:
+            match = re.match(r'^(\d+(?:\.\d+)+)', file_obj.read().strip())
+        if match:
+            grains['pfsense_base'] = match.group(1)
+            grains['pfsense_edition'] = 'CE' if int(match.group(1).split('.')[0]) < 20 else 'Plus'
+
+    # Installed pfSense-pkg-RESTAPI version ('' when absent), e.g. 2.10_2
+    result = __salt__["cmd.run_all"](['pkg', 'query', '%v', 'pfSense-pkg-RESTAPI'], python_shell=False)
+    grains['pfrest_version'] = result['stdout'].strip() if result['retcode'] == 0 else ''
 
     if file_exists('/etc/platform'):
         grains['platform'] = file_read('/etc/platform')
