@@ -115,6 +115,10 @@ def present(name,
             ret['comment'] = 'Interface is set to be updated'
         return ret
 
+    if is_present and not __salt__['pfsense_interface.need_changes'](interface, wanted_data):
+        ret['comment'] = 'Interface is already OK'
+        return ret
+
     data = __salt__['pfsense_interface.set_interface'](
             interface,
             ifname=ifname,
