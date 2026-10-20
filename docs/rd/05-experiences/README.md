@@ -4,7 +4,7 @@ Une fiche par expérience, nommée `EXP-NN-<verrou>-<sujet>.md` et construite su
 
 | Fiche | Verrou | Lot | Statut |
 |---|---|---|---|
-| EXP-01 Stabilité des identifiants sous suppressions/insertions | V1 | 2 | à faire |
+| [EXP-01](EXP-01-V1-identity.md) Stabilité des identifiants sous suppressions/insertions | V1 | 2, 8 | conclue sur banc logiciel |
 | EXP-02 Écritures concurrentes | V2 | 2 | à faire |
 | EXP-03 Rechargements pf et durée de run, avant/après | V3 | 4 | à faire |
 | [EXP-04](EXP-04-V4-custom-endpoint-vs-helper.md) Endpoint ajouté vs helper générique face aux mises à jour | V4 | 5 | conclue par analyse du code (sans banc) |
