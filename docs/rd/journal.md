@@ -129,3 +129,16 @@ Une entrée par séance de travail : date, lot et tâche, verrous concernés, ce
   - mot de passe réécrit à chaque passage (user) ;
   - VLAN réécrit à chaque passage.
 - **Reportés au lot 5 :** `webgui_settings` et `dhcp_kea`, qui dépendent de champs non modélisés (helper générique).
+
+## 2026-10-20 — Lot 5 : manques fonctionnels
+
+- **Helper générique `config_path.php`** (V4). Il lit, écrit ou supprime un chemin de `config.xml` sur liste blanche (8 motifs), puis lance des actions d'application elles aussi sur liste blanche.
+  - Les helpers PHP sont désormais testés contre des stubs pfSense : `config_path`, amorçage de l'API, champs utilisateur.
+  - Ces tests ont confirmé l'idempotence de l'amorçage.
+- **Modules couverts par ce helper :** althostname, sshguard (même application que l'ancien helper), PPPoE noyau, sudo, agent zabbix, clés WebGUI non modélisées, passerelles par serveur DNS, `numberofitems` du syslog.
+- **Migration Kea** (V8) :
+  - même traduction, JSON Kea par le helper ;
+  - backend basculé en dernier par l'API, puis un seul apply DHCP ;
+  - tout autre écart en attente est refusé.
+- **EXP-04.** Conclue par analyse du code du paquet : les endpoints ajoutés seraient effacés à chaque réinstallation, donc le helper générique est retenu.
+- **Restent non couverts, avec refus explicite :** alias URL table et champs avancés des règles. Les boot environments restent sur leur helper dédié.
