@@ -33,7 +33,7 @@ def __virtual__():
 
 def list_be():
     """Return array of boot environnements."""
-    cmd = ['php', '/scripts/manage_bootenv.php', '--list']
+    cmd = ['php', '/opt/helpers/manage_bootenv.php', '--list']
     result = __salt__['cmd.run_all'](cmd,
                                      python_shell=False)
     if result['retcode'] != 0:
@@ -50,7 +50,7 @@ def delete_be(name):
     if wanted_be["status"] != "Inactive":
         raise CommandExecutionError("Unable to delete be {0} because status is {1}".format(name, wanted_be["status"]))
 
-    cmd = ['php', '/scripts/manage_bootenv.php', '--delete={0}'.format(name)]
+    cmd = ['php', '/opt/helpers/manage_bootenv.php', '--delete={0}'.format(name)]
     result = __salt__['cmd.run_all'](cmd,
                                      python_shell=False)
     if result['retcode'] != 0:
@@ -68,7 +68,7 @@ def delete_be_for_version(version):
         if be["status"] != "Inactive":
             logger.warning("No deleting boot environnement {0} because is not inactive".format(name))
             continue
-        cmd = ['php', '/scripts/manage_bootenv.php', '--delete={0}'.format(name)]
+        cmd = ['php', '/opt/helpers/manage_bootenv.php', '--delete={0}'.format(name)]
         result = __salt__['cmd.run_all'](cmd,
                                      python_shell=False)
         if result['retcode'] != 0:
