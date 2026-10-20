@@ -307,3 +307,19 @@ class FauxapiLib:
         except json.JSONDecodeError:
             pass
         raise FauxapiLibException("Unable to parse response data!", data)
+
+
+BACKENDS = ("fauxapi", "pfrest")
+
+
+def get_backend(config_get, module):
+    """
+    Return the API backend for a module: pillar pfsense:api_backend_overrides:<module>, then
+    pfsense:api_backend, default fauxapi. config_get is __salt__['config.get'] of the caller.
+    """
+    backend = config_get("pfsense:api_backend_overrides:{0}".format(module), None)
+    if backend is None:
+        backend = config_get("pfsense:api_backend", "fauxapi")
+    if backend not in BACKENDS:
+        raise CommandExecutionError("Unknown pfsense api backend {0} for {1}".format(backend, module))
+    return backend
