@@ -71,3 +71,23 @@ Une entrée par séance de travail : date, lot et tâche, verrous concernés, ce
 - **T1.3, T1.4, T1.6 :** lab spécifié.
   - 9 scénarios de référence et leur runner livrés.
   - Exécution, fixtures réelles et captures en attente du lab.
+
+## 2026-10-20 — Décision : pas de lab
+
+- Le lab est abandonné à ce stade : les lots suivants sont développés et testés sans pare-feu de test.
+- Conséquence pour le dossier R&D : les critères de levée des verrous qui exigent des mesures (V1 à V8) restent « en cours ». Ils seront mesurés au déploiement pilote, ou sur un lab ultérieur.
+
+## 2026-10-20 — Lot 2 : client pfrest et abstraction de backend
+
+- **Contrat v2.10.2.** Il est extrait du schéma OpenAPI publié (95 endpoints, 57 modèles) et versionné dans `pfrest/contract/`.
+  - Un faux serveur pfrest en mémoire valide chaque requête contre ce contrat : champ inconnu, champ en lecture seule ou champ requis manquant donnent une erreur 400.
+  - Il reproduit les identifiants positionnels.
+  - Premier outil de V6 : les tests de contrat.
+- **Client** (V1, V2, V3) :
+  - résolution d'identité par clé métier et vérification après écriture ;
+  - verrou de run et détection des écritures tierces par l'historique de configuration ;
+  - `dry_run` sur toutes les écritures ;
+  - application synchrone par domaine.
+- **Backend.** Le choix se fait par module via le pillar ; FauxAPI reste le défaut.
+- **Lecture de configuration.** Elle se fait en local par le parseur de pfSense (PHP), au même format que FauxAPI.
+- **Architecture retenue pour le lot 4.** Le code pfrest de chaque module va dans un util typé (`_utils/pfrest_<domaine>.py`). Les modules existants n'aiguillent que selon le backend.
