@@ -17,6 +17,8 @@ CONTROL = {"apply", "async", "dry_run", "id", "parent_id", "placement"}
 QUERY_CONTROL = {"limit", "offset", "sort_by", "sort_order", "sort_flags", "query"}
 # Fields the schema lists as required but pfrest only requires conditionally (e.g. on typev4/typev6)
 CONDITIONAL_REQUIRED = {
+    "system/certificate/generate": {"ecname"},
+    "system/crl/revoked_certificate": {"revoke_time"},
     "interface": {
         "gateway_6rd",
         "ipaddr",
@@ -56,6 +58,8 @@ class FakePfrest:
     applied: list[str] = field(default_factory=list)
     requests: list[tuple[str, str, dict[str, Any]]] = field(default_factory=list)
     revisions: list[dict[str, Any]] = field(default_factory=lambda: [{"time": 1, "description": "initial"}])
+    # path -> function(server, body) returning the response data of an action endpoint (POST only)
+    hooks: dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         self._by_path: dict[str, tuple[Collection, bool]] = {}
@@ -87,6 +91,9 @@ class FakePfrest:
         self.requests.append((method, path, dict(params, **body)))
         if path == "diagnostics/config_history/revisions":
             return self._ok(copy.deepcopy(self.revisions))
+        if path in self.hooks and method == "POST":
+            error = self._validate(path, "post", body)
+            return error or self._ok(self.hooks[path](self, body))
         if path.endswith("/apply"):
             if method == "POST":
                 self.applied.append(path)
