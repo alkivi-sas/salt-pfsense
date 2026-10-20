@@ -16,6 +16,9 @@ import logging
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_interface
+import pfrest_module
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -91,6 +94,17 @@ def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
 
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_interface')
+
+
+def _config():
+    # Reads stay on config.xml: callers rely on its ipaddr values (dhcp, pppoe)
+    if _pfrest():
+        return pfsense_local.read_config()
+    return _get_client().config_get()
+
+
 def list_interfaces():
     '''
     Return the interfaces found in the interfaces file in this format::
@@ -99,8 +113,7 @@ def list_interfaces():
     .. code-block:: bash
         salt '*' pfsense_interface.list_interfaces
     '''
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     ret = {}
     for interface, data in config['interfaces'].items():
@@ -253,6 +266,12 @@ def set_interface(interface,
             else:
                 wanted_data[key] = key_default
 
+    if _pfrest():
+        exists = has_interface(interface)
+        with pfrest_module.session(__salt__, __opts__, 'interface', ha_sync=False) as api:
+            pfrest_interface.set_interface(api, interface, wanted_data, exists)
+        return True
+
     client = _get_client()
     config = client.config_get()
 
@@ -317,6 +336,11 @@ def rm_interface(interface):
         salt '*' pfsense_interfaces.rm_interface interface
     '''
     if not get_interface(interface):
+        return True
+
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__, 'interface', ha_sync=False) as api:
+            pfrest_interface.rm_interface(api, interface)
         return True
 
     client = _get_client()

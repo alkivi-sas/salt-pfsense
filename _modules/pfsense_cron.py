@@ -17,6 +17,9 @@ import sys
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_cron
+import pfrest_module
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -35,6 +38,17 @@ def __virtual__():
 def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_cron')
+
+
+def _config():
+    # The custom identifier field only lives in config.xml: reads stay local on pfrest
+    if _pfrest():
+        return pfsense_local.read_config()
+    return _get_client().config_get()
+
+
 def _generate_identifier(cron):
     if 'identifier' in cron:
         return cron['identifier']
@@ -49,8 +63,7 @@ def _generate_identifier(cron):
 
 
 def list_cron():
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     response_data = {}
     for cron in config['cron']['item']:
@@ -88,6 +101,11 @@ def add_cron(identifier, command, who='root', mday='*', hour='*', month='*', wda
     if cron_index is not None:
         raise CommandExecutionError('cron {0} already exists'.format(identifier))
 
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__, ha_sync=False) as api:
+            pfrest_cron.add_cron(api, new_cron)
+        return new_cron
+
     client = _get_client()
     config = client.config_get()
 
@@ -109,6 +127,7 @@ def manage_cron(identifier, command=None, who=None, mday=None, hour=None, month=
     cron_index, cron = _get_cron(identifier, command)
     if cron_index is None:
         raise CommandExecutionError('cron {0} does not exist'.format(identifier))
+    current_command = cron['command']
 
     if command is not None:
         cron['command'] = command
@@ -129,6 +148,10 @@ def manage_cron(identifier, command=None, who=None, mday=None, hour=None, month=
     elif cron['identifier'] != identifier:
         cron['identifier'] = identifier
 
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__, ha_sync=False) as api:
+            pfrest_cron.manage_cron(api, current_command, cron)
+        return cron
 
     client = _get_client()
     config = client.config_get()
@@ -153,6 +176,11 @@ def remove_cron(identifier, command=None):
     if cron_index is None:
         return True
 
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__, ha_sync=False) as api:
+            pfrest_cron.remove_cron(api, cron['command'])
+        return True
+
     client = _get_client()
     config = client.config_get()
     patch_system_cron = {
@@ -174,8 +202,7 @@ def remove_cron(identifier, command=None):
 # =========================================================================
 
 def _get_cron(identifier, command):
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     cron = None
     correct_index = 0
@@ -202,5 +229,9 @@ def _get_cron(identifier, command):
 
     if cron is None:
         return None, None
+
+    # pfrest does not store the custom identifier: a job found by command carries the asked one
+    if _pfrest() and 'identifier' not in cron and identifier is not None:
+        cron = dict(cron, identifier=identifier)
 
     return correct_index, cron

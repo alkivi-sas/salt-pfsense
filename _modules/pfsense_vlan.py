@@ -16,6 +16,8 @@ import logging
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_module
+import pfrest_vlan
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -33,12 +35,19 @@ def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
 
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_vlan')
+
+
 def list_vlans():
     '''
     CLI Example:
     .. code-block:: bash
         salt '*' pfsense_vlan.list_vlan
     '''
+    if _pfrest():
+        return pfrest_vlan.list_vlans(pfrest_module.client())
+
     client = _get_client()
     config = client.config_get()
 
@@ -103,6 +112,10 @@ def set_vlan(interface, tag, descr=None, pcp=None):
         'pcp': str(pcp),
     }
 
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__, ha_sync=False) as api:
+            return pfrest_vlan.set_vlan(api, interface, tag, descr, str(pcp))
+
     client = _get_client()
     config = client.config_get()
 
@@ -151,6 +164,10 @@ def rm_vlan(interface, tag):
     '''
     if not get_vlan(interface, tag):
         return True
+
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__, ha_sync=False) as api:
+            return pfrest_vlan.rm_vlan(api, interface, tag)
 
     client = _get_client()
     config = client.config_get()

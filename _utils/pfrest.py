@@ -9,6 +9,7 @@ after writing (write_checked). See docs/migration/plan.md (lot 2) and docs/rd/03
 import contextlib
 import fcntl
 import logging
+import re
 from typing import Any, Callable, Iterator
 
 import requests
@@ -66,6 +67,7 @@ class PfrestClient:
         self.dry_run = dry_run
         self.session = session if session is not None else requests.Session()
         self.expected_revision: Any = None
+        self.writes = 0
         if verify is False:
             import urllib3
 
@@ -118,6 +120,7 @@ class PfrestClient:
             params["dry_run"] = True
         self._check_revision()
         data = self._request("DELETE", endpoint, params=params)
+        self.writes += 1
         self._own_write()
         return data
 
@@ -126,8 +129,26 @@ class PfrestClient:
             body["dry_run"] = True
         self._check_revision()
         data = self._request(method, endpoint, body=body)
+        self.writes += 1
         self._own_write()
         return data
+
+    def download(self, endpoint: str, body: dict[str, Any]) -> tuple[str | None, bytes]:
+        """POST an action returning a file (binary content); return (filename, content)."""
+        headers = {"X-API-Key": self._api_key, "Accept": "application/octet-stream"}
+        response = self.session.request(
+            "POST", self.base_url + endpoint, json=body, headers=headers, verify=self.verify, timeout=TIMEOUT
+        )
+        if response.status_code >= 400:
+            try:
+                payload = response.json()
+            except ValueError:
+                payload = {}
+            raise PfrestError(
+                response.status_code, payload.get("response_id", "UNKNOWN"), payload.get("message", "download failed")
+            )
+        match = re.search(r'filename="?([^";]+)"?', response.headers.get("Content-Disposition", ""))
+        return (match.group(1) if match else None), response.content
 
     # apply (V3)
     # =========================================================================
@@ -230,12 +251,12 @@ class PfrestClient:
 
 
 @contextlib.contextmanager
-def config_lock(client: PfrestClient, path: str = LOCK_FILE) -> Iterator[PfrestClient]:
+def config_lock(client: PfrestClient, path: str | None = None) -> Iterator[PfrestClient]:
     """
     Serialize the read -> write -> apply sequences of concurrent Salt runs on the minion, and detect
     writes made by others (WebGUI, HA sync) in between.
     """
-    with open(path, "a") as handle:
+    with open(path or LOCK_FILE, "a") as handle:
         fcntl.flock(handle, fcntl.LOCK_EX)
         client.expected_revision = client.revision()
         try:

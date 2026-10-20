@@ -15,7 +15,13 @@ import logging
 # Import Salt libs
 import salt.utils.files
 import salt.utils.stringutils
+import json
+
 import pfsense
+import pfrest_module
+import pfrest_openvpn
+import pfrest_user
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -37,9 +43,32 @@ def _sync_ha():
     cmd = ['/etc/rc.filter_synchronize']
     __salt__['cmd.run_all'](cmd, python_shell=False)
 
+
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_user')
+
+
+def _config():
+    # pfrest masks hashes and keys: reads stay on the local config.xml, same shapes as FauxAPI
+    if _pfrest():
+        return pfsense_local.read_config()
+    return _get_client().config_get()
+
+
+def _set_fields(username, fields):
+    cmd = ['php', '/opt/helpers/user_set_fields.php']
+    result = __salt__['cmd.run_all'](cmd, stdin=json.dumps({'name': username, 'fields': fields}),
+                                     python_shell=False, output_loglevel='quiet', ignore_retcode=True)
+    if result['retcode'] != 0:
+        raise CommandExecutionError('unable to set fields of user {0}: {1}'.format(username, result['stderr']))
+    return json.loads(result['stdout'])['changed']
+
+
+def _uid_to_name():
+    return {str(user['uid']): user['name'] for user in _config()['system']['user']}
+
 def list_users():
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     response_data = {}
     index = 0
@@ -59,6 +88,12 @@ def get_user(username):
 
 
 def add_user(username, attributes={}):
+    if _pfrest():
+        if _get_entity('user', username)[0] is not None:
+            raise CommandExecutionError('user {0} already exists'.format(username))
+        with pfrest_module.session(__salt__, __opts__) as api:
+            return pfrest_user.add_user(api, _set_fields, username, attributes)
+
     client = _get_client()
     config = client.config_get()
 
@@ -128,6 +163,12 @@ def add_user(username, attributes={}):
     return user
 
 def manage_user(username, attributes):
+    if _pfrest():
+        if type(attributes) != dict:
+            raise CommandExecutionError('attributes is incorrect type')
+        with pfrest_module.session(__salt__, __opts__) as api:
+            return pfrest_user.manage_user(api, _set_fields, username, attributes)
+
     client = _get_client()
     config = client.config_get()
 
@@ -189,6 +230,14 @@ def manage_user(username, attributes):
 
 def add_cert(username, refid):
     """Add a certificate to a user."""
+    if _pfrest():
+        user_index, user = _get_entity('user', username)
+        if user_index is None:
+            raise CommandExecutionError('user {0} does not exist'.format(username))
+        with pfrest_module.session(__salt__, __opts__) as api:
+            pfrest_user.set_certs(api, username, list(user.get('cert') or []) + [refid])
+        return True
+
     client = _get_client()
     config = client.config_get()
 
@@ -272,6 +321,15 @@ def export_openvpn_config(username, addr, vpnid=None, caref=None, conf_type='con
     if server['caref'] != caref:
         raise CommandExecutionError('OpenVPN server CA {0} does not match wanted CA {1}'.format(server['caref'], caref))
 
+    if _pfrest():
+        server_id, export_id = pfrest_openvpn.indexes(_config(), vpnid)
+        api = pfrest_module.client()
+        filename, content = pfrest_openvpn.export(api, server_id, export_id, username, wanted_certid, addr, conf_type)
+        path = os.path.join(pfrest_openvpn.EXPORT_DIR, os.path.basename(filename or pfrest_openvpn.default_filename(username, conf_type)))
+        with open(path, 'wb') as handle:
+            handle.write(content)
+        return path
+
     # Launch generation
     cmd = ['php', '/opt/helpers/export_openvpn_config.php', vpnid, str(cert_index), caref, addr, conf_type]
 
@@ -285,6 +343,13 @@ def export_openvpn_config(username, addr, vpnid=None, caref=None, conf_type='con
 
 
 def remove_user(username):
+    if _pfrest():
+        if _get_entity('user', username)[0] is None:
+            raise CommandExecutionError('user does not exist', username)
+        with pfrest_module.session(__salt__, __opts__) as api:
+            pfrest_user.remove_user(api, username)
+        return True
+
     client = _get_client()
     config = client.config_get()
 
@@ -312,8 +377,7 @@ def remove_user(username):
 # =========================================================================
 
 def list_groups():
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     response_data = {}
     for group in config['system']['group']:
@@ -322,6 +386,12 @@ def list_groups():
     return response_data
 
 def add_group(groupname):
+    if _pfrest():
+        if _get_entity('group', groupname)[0] is not None:
+            raise CommandExecutionError('group already exists', groupname)
+        with pfrest_module.session(__salt__, __opts__) as api:
+            return pfrest_user.add_group(api, groupname)
+
     client = _get_client()
     config = client.config_get()
 
@@ -353,6 +423,10 @@ def add_group(groupname):
     return group
 
 def manage_group(groupname, attributes):
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__) as api:
+            return pfrest_user.manage_group(api, groupname, attributes, _uid_to_name())
+
     client = _get_client()
     config = client.config_get()
 
@@ -396,6 +470,11 @@ def manage_group(groupname, attributes):
     return group
 
 def remove_group(groupname):
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__) as api:
+            pfrest_user.remove_group(api, groupname)
+        return True
+
     client = _get_client()
     config = client.config_get()
 
@@ -421,8 +500,7 @@ def remove_group(groupname):
 # =========================================================================
 
 def _get_entity(entity_type, entity_name):
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     entity = None
     entity_index = 0

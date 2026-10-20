@@ -18,6 +18,8 @@ import json
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_module
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -35,10 +37,16 @@ def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
 
+def _config():
+    # Read only module: on pfrest the local config.xml gives the same data
+    if pfrest_module.enabled(__salt__, 'pfsense_openvpn'):
+        return pfsense_local.read_config()
+    return _get_client().config_get()
+
+
 def list_servers(all_data=False):
     """Return dict of crls."""
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     ret = {}
     if 'openvpn' not in config:
@@ -89,8 +97,7 @@ def get_server_hostname(vpnid):
     if vpnid not in servers:
         return None
 
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     if 'installedpackages' not in config:
         return ret

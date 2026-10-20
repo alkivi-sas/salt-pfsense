@@ -17,6 +17,9 @@ import copy
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_dhcp_static_map
+import pfrest_module
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -33,6 +36,10 @@ def __virtual__():
 def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_dhcp_static_map')
+
+
 def _ensure_pending_config_loaded():
     """
     Load pfSense config once into __context__ both as original and pending.
@@ -48,8 +55,10 @@ def _ensure_pending_config_loaded():
     if 'pfsense_dhcp_static_map.original_config' in ctx and 'pfsense_dhcp_static_map.pending_config' in ctx:
         return
 
-    client = _get_client()
-    full_config = client.config_get()
+    if _pfrest():
+        full_config = pfsense_local.read_config()
+    else:
+        full_config = _get_client().config_get()
     # Keep deep copies to avoid accidental cross-mutation
     ctx['pfsense_dhcp_static_map.original_config'] = copy.deepcopy(full_config)
     ctx['pfsense_dhcp_static_map.pending_config'] = copy.deepcopy(full_config)
@@ -248,6 +257,12 @@ def apply():
     if original == pending:
         # Nothing to do
         return False
+
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__, 'dhcp') as api:
+            changed = pfrest_dhcp_static_map.commit(api, original, pending)
+        _clear_config_cache()
+        return changed
 
     client = _get_client()
     result = client.config_set(pending)

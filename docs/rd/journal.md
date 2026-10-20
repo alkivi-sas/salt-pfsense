@@ -108,3 +108,24 @@ Une entrée par séance de travail : date, lot et tâche, verrous concernés, ce
   - effet de l'access list ;
   - restauration de `backup.json` après une mise à jour de pfSense ;
   - appels `local_user_set` et `local_group_set` en ligne de commande.
+
+## 2026-10-20 — Lot 4 : migration des modules
+
+- **Socle.** Chaque module garde ses fonctions publiques et aiguille vers un util typé `_utils/pfrest_<domaine>.py`.
+  - Chaque écriture se fait dans une session verrouillée (V2).
+  - L'apply est immédiat par défaut, comme avec FauxAPI. Il peut être différé par pillar avec le state `pfsense_apply` (V3).
+  - La synchronisation HA a lieu après les écritures, là où FauxAPI la faisait.
+- **Modules migrés :** alias, syslog, règles de filtrage, NAT, utilisateurs et groupes, clés SSH, cron, VLAN, static mappings DHCP, serveurs DNS, interfaces et passerelles, certificats et CRL, OpenVPN (lecture et export), pairs WireGuard.
+- **Constats et choix (V5, équivalence sémantique) :**
+  - **Lectures.** Elles restent sur `config.xml` partout où pfrest masque des secrets (hash, clés privées, PSK) ou ne modélise pas un champ (identifiant cron, passerelles DNS) : les formes renvoyées restent exactement celles de FauxAPI.
+  - **Mots de passe.** Le pillar porte des hashes bcrypt, que pfrest ne peut pas recevoir. Ils passent par un helper local sur liste blanche.
+  - **Règles et NAT.** Une conversion bidirectionnelle conserve les objets et la clé métier existants :
+    - `wanip` devient `wan:ip`, la négation `!` est conservée ;
+    - les plages `-` deviennent `:` ;
+    - l'interface passe en liste.
+  - **Contrat.** Les champs requis du schéma OpenAPI sont parfois conditionnels (interfaces, PKI). Le faux serveur en tient compte.
+- **Défauts trouvés et corrigés en route :**
+  - `sourceip` vide non idempotent (syslog) ;
+  - mot de passe réécrit à chaque passage (user) ;
+  - VLAN réécrit à chaque passage.
+- **Reportés au lot 5 :** `webgui_settings` et `dhcp_kea`, qui dépendent de champs non modélisés (helper générique).
