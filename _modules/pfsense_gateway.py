@@ -16,6 +16,8 @@ import logging
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_module
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -37,8 +39,10 @@ def list_gateways(disable=False, interface=None, ipprotocol='inet'):
     '''
     Return the gateways
     '''
-    client = _get_client()
-    config = client.config_get()
+    if pfrest_module.enabled(__salt__, 'pfsense_gateway'):
+        config = pfsense_local.read_config()
+    else:
+        config = _get_client().config_get()
 
     if ipprotocol not in ["inet", "inet6"]:
         raise CommandExecutionError("Unknow ipprotocol {0}".format(ipprotocol))
