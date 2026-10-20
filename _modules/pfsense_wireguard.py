@@ -132,7 +132,7 @@ def add_peer(name,
         return f'Peer {name} already present'
     for peer_name, data in current_peers.items():
         if data['publickey'] == publickey:
-            return f'Peer {peeer_name} have the same publickey {publickey}'
+            return f'Peer {peer_name} have the same publickey {publickey}'
         allowed_ips = list(map(lambda x: x['address'], data['allowedips']))
         if allowip in allowed_ips:
             return f'Peer {peer_name} have the same allowip {allowip}'
