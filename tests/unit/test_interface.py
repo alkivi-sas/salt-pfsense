@@ -43,3 +43,20 @@ def test_present_test_mode_on_existing_interface(load_module: Loader, module: An
     state = load_module("_states/pfsense_interface.py", __salt__=salt, __opts__={"test": True})
     ret = state.present("opt1", "igb2", "192.0.2.1", 24, "VOIP")
     assert ret["comment"] == "Interface is already OK"
+
+
+def test_present_unchanged_interface_is_not_rewritten(load_module: Loader, module: Any) -> None:
+    calls: list[str] = []
+
+    def set_interface(*args: Any, **kwargs: Any) -> bool:
+        calls.append("set_interface")
+        return True
+
+    salt = {
+        "pfsense_interface.has_interface": lambda name: True,
+        "pfsense_interface.need_changes": module.need_changes,
+        "pfsense_interface.set_interface": set_interface,
+    }
+    state = load_module("_states/pfsense_interface.py", __salt__=salt)
+    ret = state.present("opt1", "igb2", "192.0.2.1", 24, "VOIP")
+    assert ret["changes"] == {} and calls == []
