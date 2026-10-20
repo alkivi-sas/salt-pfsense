@@ -11,4 +11,4 @@ Une fiche par expérience, nommée `EXP-NN-<verrou>-<sujet>.md` et construite su
 | EXP-05 Oracle `config.xml` : écarts par module | V5 | 4 | à faire |
 | EXP-06 Contrat sur chaque version pfrest épinglée | V6 | 3 | à faire |
 | EXP-07 Amorçage de clé sans compte administrateur | V7 | 3 | à faire |
-| EXP-08 Équivalence des offres DHCP ISC / Kea | V8 | 1 | à faire |
+| [EXP-08](EXP-08-V8-dhcp-isc-kea.md) Équivalence des offres DHCP ISC / Kea | V8 | 1 | en cours (tests unitaires faits, captures lab à faire) |
