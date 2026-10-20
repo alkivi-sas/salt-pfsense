@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+
+[dev-packages]
+# Same Salt release as the FreeBSD port running on the firewalls
+salt = "==3008.2"
+pytest = "*"
+pytest-mock = "*"
+black = "*"
+flake8 = "*"
+mypy = "*"
+pre-commit = "*"
+types-requests = "*"
+types-pyyaml = "*"
+
+[requires]
+python_version = "3.13"

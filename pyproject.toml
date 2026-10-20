@@ -1,0 +1,16 @@
+[tool.black]
+line-length = 120
+skip-string-normalization = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "lab: runs against the pfSense lab (needs LAB_MINION, see docs/migration/lab.md)",
+]
+addopts = "-m 'not lab'"
+
+[tool.mypy]
+python_version = "3.13"
+files = ["tests"]
+ignore_missing_imports = true
+check_untyped_defs = true
