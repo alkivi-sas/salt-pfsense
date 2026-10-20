@@ -1,0 +1,4 @@
+# Differences between the FauxAPI and pfrest backends that are expected.
+# Each entry: path (glob on the colon path printed by diff_config.py) and reason.
+# Filled during lot 4, one entry per explained difference (V5).
+[]
