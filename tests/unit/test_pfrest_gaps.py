@@ -1,50 +1,12 @@
 """Modules whose data pfrest does not model: they go through helpers/config_path.php."""
 
 import copy
-import json
 from typing import Any, Callable
 
 import pytest
 
-from conftest import Loader, PfrestEnv
+from conftest import ConfigPath, Loader, PfrestEnv
 from fake_pfrest import Collection
-
-HELPER = "/opt/helpers/config_path.php"
-
-
-class ConfigPath:
-    """Emulates config_path.php on an in-memory config.xml, recording the apply actions."""
-
-    def __init__(self, config: dict[str, Any]) -> None:
-        self.config = config
-        self.applied: list[str] = []
-        self.commands: list[list[str]] = []
-
-    def node(self, path: str) -> tuple[Any, str]:
-        parent: Any = self.config
-        keys = path.split("/")
-        for key in keys[:-1]:
-            parent = parent[int(key)] if isinstance(parent, list) else parent.setdefault(key, {})
-        return parent, keys[-1]
-
-    def run_all(self, cmd: list[str], stdin: str = "", **kwargs: Any) -> dict[str, Any]:
-        if cmd != ["php", HELPER]:
-            self.commands.append(cmd)
-            return {"retcode": 0, "stdout": "", "stderr": ""}
-        request = json.loads(stdin)
-        parent, key = self.node(request["path"])
-        current = parent.get(key)
-        if request["op"] == "get":
-            return {"retcode": 0, "stdout": json.dumps({"value": current}), "stderr": ""}
-        if request["op"] == "set":
-            changed = current != request["value"]
-            parent[key] = request["value"]
-        else:
-            changed = key in parent
-            parent.pop(key, None)
-        if changed:
-            self.applied.extend(request.get("apply", []))
-        return {"retcode": 0, "stdout": json.dumps({"changed": changed}), "stderr": ""}
 
 
 @pytest.fixture
