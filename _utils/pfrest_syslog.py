@@ -8,6 +8,11 @@ import pfrest
 
 ENDPOINT = "status/logs/settings"
 
+
+class NotCovered(CommandExecutionError):
+    """The syslog key has no LogSettings field (it goes through config_path)."""
+
+
 # config.xml syslog key -> LogSettings field, when the names differ
 FIELDS = {
     "enable": "enableremotelogging",
@@ -49,7 +54,7 @@ def field(name: str) -> str:
     """LogSettings field for a config.xml syslog key; raise when pfrest does not model it."""
     mapped = FIELDS.get(name, name)
     if mapped not in INTEGERS | BOOLEANS | STRINGS:
-        raise CommandExecutionError("syslog setting {0} is not covered by pfrest".format(name))
+        raise NotCovered("syslog setting {0} is not covered by pfrest".format(name))
     return mapped
 
 
