@@ -11,6 +11,8 @@ import logging
 
 # Import Salt libs
 import pfsense
+import pfrest_module
+import pfrest_syslog
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -44,6 +46,10 @@ def _get_client():
     return pfsense.FauxapiLib.get_singleton(debug=True)
 
 
+def _pfrest():
+    return pfrest_module.enabled(__salt__, "pfsense_syslog_configuration")
+
+
 def exit_handler():
     global HAS_CHANGES
     if HAS_CHANGES:
@@ -56,6 +62,9 @@ def exit_handler():
 
 
 def force_reload():
+    # pfrest applies LogSettings on each write (syslogd restart, pflog)
+    if _pfrest():
+        return True
     client = _get_client()
     params = {"function": "system_syslogd_start"}
     client.function_call(params)
@@ -71,6 +80,9 @@ def get_setting(name):
     .. code-block:: bash
         salt '*' pfsense_webgui_settings.get_setting nodnsrebindcheck
     """
+    if _pfrest():
+        return pfrest_syslog.get_setting(pfrest_module.client(), name)
+
     client = _get_client()
     config = client.config_get()
 
@@ -98,6 +110,10 @@ def set_setting(name, value):
         raise SaltInvocationError("name can not be an empty string")
     if value is None:
         raise SaltInvocationError("value can not be None")
+
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__, ha_sync=False) as api:
+            return pfrest_syslog.set_setting(api, name, value)
 
     client = _get_client()
     config = client.config_get()
