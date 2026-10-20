@@ -189,12 +189,14 @@ def has_interface(interface):
         return True
 
 
-def need_changes(interface):
+def need_changes(interface, wanted_data):
     '''
-    Return a list of key that need updates
+    Return the list of keys that need updates.
+    wanted_data uses the set_interface format: a boolean key is wanted True
+    when present (empty string), False when absent.
     CLI Example:
     .. code-block:: bash
-        salt '*' pfsense_interface.need_changes opt3 '{blockbogons:False}'
+        salt '*' pfsense_interface.need_changes opt3 '{descr: VOIP, blockbogons: ""}'
     '''
     keys_to_update = []
     current_data = get_interface(interface)
@@ -202,29 +204,15 @@ def need_changes(interface):
         raise CommandExecutionError('Unable to get interface {0}'.format(interface))
 
     for key, key_data in KEYS.items():
-        key_type = key_data['type']
-
-        if key in wanted_data:
-            if key_type == 'boolean':
-                wanted_value = wanted_data[key]
-                # If we want True and is actually False
-                if wanted_data and key not in current_data:
-                    logger.debug('key {0} differs, '.format(key) +
-                                 'actual {0} vs'.format(False) +
-                                 'wanted {0}'.format(True))
-                    keys_to_update.add(key)
-                # If we want False and is actually True
-                elif not wanted_data and key in current_data:
-                    logger.debug('key {0} differs, '.format(key) +
-                                 'actual {0} vs'.format(True) +
-                                 'wanted {0}'.format(False))
-                    keys_to_update.add(key)
-            else:
-                if wanted_data[key] != current_data[key]:
-                    logger.debug('key {0} differs, '.format(key) +
-                                 'actual {0} vs'.format(current_data[key]) +
-                                 'wanted {0}'.format(wanted_data[key]))
-                    keys_to_update.add(key)
+        if key_data['type'] == 'boolean':
+            # list_interfaces exposes booleans as True / False
+            if (key in wanted_data) != current_data[key]:
+                logger.debug('boolean key {0} differs, actual {1}'.format(key, current_data[key]))
+                keys_to_update.append(key)
+        elif key in wanted_data and str(wanted_data[key]) != current_data.get(key):
+            logger.debug('key {0} differs, actual {1} vs wanted {2}'.format(
+                key, current_data.get(key), wanted_data[key]))
+            keys_to_update.append(key)
     return keys_to_update
 
 

@@ -384,7 +384,7 @@ def check_key_file(user,
     if not s_keys:
         err = 'No keys detected in {0}. Is file properly ' \
               'formatted?'.format(source)
-        log.error(err)
+        logger.error(err)
         __context__['ssh_auth.error'] = err
         return {}
     else:
@@ -535,7 +535,7 @@ def set_auth_key_from_file(user,
                 source
             )
         )
-        log.error(err)
+        logger.error(err)
         __context__['ssh_auth.error'] = err
         return 'fail'
     else:
@@ -590,7 +590,7 @@ def rm_auth_key_from_file(user,
                 source
             )
         )
-        log.error(err)
+        logger.error(err)
         __context__['ssh_auth.error'] = err
         return 'fail'
     else:

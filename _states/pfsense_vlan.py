@@ -26,7 +26,7 @@ def present(
         if not is_present:
             ret['comment'] = 'VLAN is set to be created'
             return ret
-        is_ok = __salt__['pfsense_vlan.has_vlan'](interface, vlan)
+        is_ok = __salt__['pfsense_vlan.has_vlan'](interface, tag)
         if is_ok:
             ret['comment'] = 'VLAN is already OK'
         else:

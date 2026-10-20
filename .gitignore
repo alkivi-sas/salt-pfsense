@@ -1,3 +1,4 @@
 *.sw*
 .claude/worktrees
 docs/rd/private/
+.venv/

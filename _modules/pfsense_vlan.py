@@ -106,9 +106,13 @@ def set_vlan(interface, tag, descr=None, pcp=None):
     client = _get_client()
     config = client.config_get()
 
+    # No VLAN yet: pfSense stores an empty string (or a dict without 'vlan')
+    if not isinstance(config.get('vlans'), dict):
+        config['vlans'] = {}
+
     new_vlan = []
     to_add = True
-    for current_vlan in config['vlans']['vlan']:
+    for current_vlan in config['vlans'].get('vlan', []):
         if current_vlan['vlanif'] == vlanif:
             to_add = False
             for key, value in wanted_data.items():
