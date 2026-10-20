@@ -23,7 +23,7 @@ _INTERFACE = re.compile(r"^(wan|lan|opt\d+)$")
 _SPECIAL = ("(self)", "pppoe", "l2tp")
 
 
-def _endpoint_to_api(data: Any) -> tuple[str, str | None]:
+def endpoint_to_api(data: Any) -> tuple[str, str | None]:
     """config.xml source/destination dict -> (pfrest address string, port)."""
     data = data or {"any": ""}
     if "any" in data:
@@ -44,7 +44,7 @@ def _endpoint_to_api(data: Any) -> tuple[str, str | None]:
     return address, (str(port).replace("-", ":") if port not in (None, "") else None)
 
 
-def _endpoint_from_api(address: str, port: Any) -> dict[str, Any]:
+def endpoint_from_api(address: str, port: Any) -> dict[str, Any]:
     data: dict[str, Any] = {}
     if address.startswith("!"):
         data["not"] = ""
@@ -75,7 +75,7 @@ def to_api(rule: dict[str, Any]) -> dict[str, Any]:
     if protocol not in (None, "", "any"):
         body["protocol"] = protocol
     for side in ("source", "destination"):
-        address, port = _endpoint_to_api(rule.get(side))
+        address, port = endpoint_to_api(rule.get(side))
         body[side] = address
         if port is not None:
             body[side + "_port"] = port
@@ -94,7 +94,7 @@ def from_api(obj: dict[str, Any]) -> dict[str, Any]:
     if obj.get("protocol"):
         rule["protocol"] = obj["protocol"]
     for side in ("source", "destination"):
-        rule[side] = _endpoint_from_api(obj.get(side) or "any", obj.get(side + "_port"))
+        rule[side] = endpoint_from_api(obj.get(side) or "any", obj.get(side + "_port"))
     for flag in ("disabled", "log"):
         if obj.get(flag):
             rule[flag] = ""
@@ -134,7 +134,7 @@ def patch_rule(api: pfrest.PfrestClient, rule_id: int, changes: dict[str, Any]) 
     body: dict[str, Any] = {"id": rule_id}
     for key, value in changes.items():
         if key in ("source", "destination"):
-            address, port = _endpoint_to_api(value)
+            address, port = endpoint_to_api(value)
             body[key] = address
             body[key + "_port"] = port
         elif key == "log":

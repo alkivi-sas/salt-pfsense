@@ -16,6 +16,8 @@ import logging
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_module
+import pfrest_nat_rule
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -31,6 +33,10 @@ def __virtual__():
 
 def _get_client():
     return pfsense.FauxapiLib(debug=True)
+
+
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_nat_rule')
 
 
 class NatRule:
@@ -223,8 +229,13 @@ def list_rules(out=None):
         salt '*' pfsense_nat_rule.list_rules out=string
         salt '*' pfsense_nat_rule.list_rules out=dict
     '''
-    client = _get_client()
-    config = client.config_get()
+    if _pfrest():
+        rules_data = pfrest_nat_rule.config_rules(pfrest_module.client())
+    else:
+        client = _get_client()
+        config = client.config_get()
+        nat = config.get('nat')
+        rules_data = nat.get('rule', []) if isinstance(nat, dict) else []
 
     if out is None:
         out = 'dict'
@@ -234,13 +245,7 @@ def list_rules(out=None):
         raise CommandExecutionError('out must be in {0}'.format(ok_out))
 
     ret = []
-    if 'nat' not in config:
-        return ret
-
-    if 'rule' not in config['nat']:
-        return ret
-
-    for data in config['nat']['rule']:
+    for data in rules_data:
         rule = NatRule.from_config(data)
         if out == 'string':
             ret.append(rule.to_string())
@@ -349,6 +354,11 @@ def add_rule(descr, protocol, target, interface, local_port, disabled=False, sou
     if test_rule in present_rules:
         return test_rule.to_dict()
 
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__, 'firewall', ha_sync=False) as api:
+            pfrest_nat_rule.add_rule(api, test_rule.to_dict(), index)
+        return test_rule.to_dict()
+
     client = _get_client()
     config = client.config_get()
 
@@ -399,6 +409,11 @@ def rm_rule(descr, protocol, target, interface, local_port, disabled=False, sour
 
     present_rules = list_rules(out='object')
     if test_rule not in present_rules:
+        return True
+
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__, 'firewall', ha_sync=False) as api:
+            pfrest_nat_rule.rm_rules(api, lambda rule: NatRule.from_config(rule) == test_rule)
         return True
 
     client = _get_client()

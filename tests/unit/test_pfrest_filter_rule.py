@@ -45,8 +45,8 @@ def _setup(load_module: Loader, pfrest_env: Callable[..., PfrestEnv], rules: lis
     ],
 )
 def test_endpoint_round_trip(config: dict[str, Any], api: tuple[str, str | None]) -> None:
-    assert conv._endpoint_to_api(config) == api
-    assert conv._endpoint_from_api(*api) == config
+    assert conv.endpoint_to_api(config) == api
+    assert conv.endpoint_from_api(*api) == config
 
 
 def test_unsupported_field_refused() -> None:
