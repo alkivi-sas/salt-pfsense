@@ -142,3 +142,12 @@ Une entrée par séance de travail : date, lot et tâche, verrous concernés, ce
   - tout autre écart en attente est refusé.
 - **EXP-04.** Conclue par analyse du code du paquet : les endpoints ajoutés seraient effacés à chaque réinstallation, donc le helper générique est retenu.
 - **Restent non couverts, avec refus explicite :** alias URL table et champs avancés des règles. Les boot environments restent sur leur helper dédié.
+
+## 2026-10-20 — Lot 6 : recettes de déploiement Salt
+
+- **33 recettes au même format** (9 sections) : 8 socle, 19 par domaine, 6 d’exploitation.
+- **Exemples réels** dans `examples/` : un pillar et 22 SLS.
+- **Validation hors ligne**, à défaut de lab (T6.5) :
+  - structure des recettes et existence des fichiers cités ;
+  - rendu Jinja/YAML de chaque SLS ;
+  - existence de chaque fonction de state ou de module appelée.
