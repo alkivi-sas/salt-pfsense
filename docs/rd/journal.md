@@ -91,3 +91,20 @@ Une entrée par séance de travail : date, lot et tâche, verrous concernés, ce
 - **Backend.** Le choix se fait par module via le pillar ; FauxAPI reste le défaut.
 - **Lecture de configuration.** Elle se fait en local par le parseur de pfSense (PHP), au même format que FauxAPI.
 - **Architecture retenue pour le lot 4.** Le code pfrest de chaque module va dans un util typé (`_utils/pfrest_<domaine>.py`). Les modules existants n'aiguillent que selon le backend.
+
+## 2026-10-20 — Lot 3 : cycle de vie du paquet pfrest
+
+- **Version épinglée v2.10.2.** Les bases supportées sont relevées sur les assets de la release.
+  - Installation par asset figé ; sur Plus, contournement des dépôts Netgate (`-C /dev/null`).
+  - Changement de version par `pfsense-restapi revert <tag>`, jamais `latest`.
+- **V7, amorçage sans secret humain.** Implémenté.
+  - La clé est générée hors du pare-feu et stockée dans le pillar chiffré.
+  - Le pare-feu ne reçoit que son hash (`sha256`), écrit par un helper local avec l'utilisateur et le groupe dédiés ; `KeyAuth` est activé.
+  - Aucun mot de passe administrateur n'est manipulé.
+  - Tests : la clé n'apparaît ni dans la requête au helper, ni dans les changements ; le fichier de clé est en 0600.
+- **Moindre privilège.** La liste des privilèges est dérivée des endpoints réellement utilisés, et chaque couple endpoint/méthode est vérifié contre le contrat. `command_prompt` et `page-all` sont exclus.
+- **Constat tiré du contrat.** `represent_interfaces_as` vaut `descr` par défaut : l'API exposerait les noms affichés des interfaces. Il est forcé à `id` pour conserver les identifiants internes utilisés par les modules.
+- **Non vérifié sans lab :**
+  - effet de l'access list ;
+  - restauration de `backup.json` après une mise à jour de pfSense ;
+  - appels `local_user_set` et `local_group_set` en ligne de commande.
