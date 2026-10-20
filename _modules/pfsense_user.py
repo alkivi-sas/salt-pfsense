@@ -19,6 +19,7 @@ import json
 
 import pfsense
 import pfrest_module
+import pfrest_openvpn
 import pfrest_user
 import pfsense_local
 from salt.exceptions import (
@@ -319,6 +320,15 @@ def export_openvpn_config(username, addr, vpnid=None, caref=None, conf_type='con
     # Check that ca match vpn caref
     if server['caref'] != caref:
         raise CommandExecutionError('OpenVPN server CA {0} does not match wanted CA {1}'.format(server['caref'], caref))
+
+    if _pfrest():
+        server_id, export_id = pfrest_openvpn.indexes(_config(), vpnid)
+        api = pfrest_module.client()
+        filename, content = pfrest_openvpn.export(api, server_id, export_id, username, wanted_certid, addr, conf_type)
+        path = os.path.join(pfrest_openvpn.EXPORT_DIR, os.path.basename(filename or pfrest_openvpn.default_filename(username, conf_type)))
+        with open(path, 'wb') as handle:
+            handle.write(content)
+        return path
 
     # Launch generation
     cmd = ['php', '/opt/helpers/export_openvpn_config.php', vpnid, str(cert_index), caref, addr, conf_type]
