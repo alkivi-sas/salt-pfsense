@@ -39,13 +39,13 @@ def present(name, identifier, who='root', mday='*', hour='*', month='*', wday='*
         ret['changes'] = cron
         return ret
 
-    # Cron is present check changes
+    # Cron is present check changes (config.xml stores the schedule as strings)
     new_cron = {
-        'mday': mday,
-        'hour': hour,
-        'month': month,
-        'wday': wday,
-        'minute': minute,
+        'mday': str(mday),
+        'hour': str(hour),
+        'month': str(month),
+        'wday': str(wday),
+        'minute': str(minute),
         'command': name,
         'identifier': identifier,
         'who': who,
@@ -68,7 +68,7 @@ def present(name, identifier, who='root', mday='*', hour='*', month='*', wday='*
 
     if __opts__['test']:
         ret['comment'] = 'Cron {0} would be update'.format(name)
-        ret['changes'] = wanted_data
+        ret['changes'] = new_cron
         return ret
 
     cron = __salt__['pfsense_cron.manage_cron'](identifier,
