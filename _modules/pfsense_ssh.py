@@ -17,6 +17,9 @@ import sys
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_module
+import pfrest_user
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
 )
@@ -33,6 +36,25 @@ def __virtual__():
 
 def _get_client():
     return pfsense.FauxapiLib(debug=True)
+
+
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_ssh')
+
+
+def _config():
+    if _pfrest():
+        return pfsense_local.read_config()
+    return _get_client().config_get()
+
+
+def _save(config, user):
+    '''Persist the authorizedkeys of user (config.xml dict, keys base64 encoded).'''
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__) as api:
+            pfrest_user.manage_user(api, None, user['name'], {'authorizedkeys': user['authorizedkeys']})
+        return {'message': 'ok'}
+    return _get_client().config_set(config)
 
 
 def _refine_enc(enc):
@@ -168,8 +190,7 @@ def auth_keys(user,
 
         salt '*' ssh.auth_keys root
     '''
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
     correct_user = _get_user(user, config)
     authorizedkeys = correct_user['authorizedkeys']
     keys = _decode_keys(authorizedkeys)
@@ -304,8 +325,7 @@ def _replace_auth_key(
 
     auth_line = _format_auth_line(key, enc, comment, options or [])
 
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
     correct_user = _get_user(user, config)
     authorizedkeys = correct_user['authorizedkeys']
     keys = _decode_keys(authorizedkeys)
@@ -322,7 +342,7 @@ def _replace_auth_key(
     to_put_keys = _encode_keys(wanted_keys)
     correct_user['authorizedkeys'] = to_put_keys
 
-    result = client.config_set(config)
+    result = _save(config, correct_user)
     if 'message' not in result:
         raise CommandExecutionError('Problem when updating ssh key')
     elif result['message'] != 'ok':
@@ -418,8 +438,7 @@ def rm_auth_key(user,
         return 'Key is not present'
     else:
 
-        client = _get_client()
-        config = client.config_get()
+        config = _config()
         correct_user = _get_user(user, config)
         authorizedkeys = correct_user['authorizedkeys']
         keys = _decode_keys(authorizedkeys)
@@ -435,7 +454,7 @@ def rm_auth_key(user,
 
         to_put_keys = _encode_keys(wanted_keys)
         correct_user['authorizedkeys'] = to_put_keys
-        ret = client.config_set(config)
+        ret = _save(config, correct_user)
         if ret['message'] != 'ok':
             return 'Key not removed'
         else:
@@ -487,8 +506,7 @@ def set_auth_key(user,
     elif status == 'exists':
         return 'no change'
 
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
     correct_user = _get_user(user, config)
     authorizedkeys = correct_user['authorizedkeys']
     keys = _decode_keys(authorizedkeys)
@@ -501,7 +519,7 @@ def set_auth_key(user,
     to_put_keys = _encode_keys(keys)
     correct_user['authorizedkeys'] = to_put_keys
 
-    result = client.config_set(config)
+    result = _save(config, correct_user)
     if 'message' not in result:
         raise CommandExecutionError('Problem when updating ssh key')
     elif result['message'] != 'ok':

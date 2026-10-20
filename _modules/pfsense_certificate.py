@@ -18,6 +18,9 @@ import json
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_certificate
+import pfrest_module
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -35,10 +38,20 @@ def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
 
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_certificate')
+
+
+def _config():
+    # pfrest masks private keys: reads stay on the local config.xml (refids, indexes, base64 PEM)
+    if _pfrest():
+        return pfsense_local.read_config()
+    return _get_client().config_get()
+
+
 def list_crl(all_data=False):
     """Return dict of crls."""
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     ret = {}
     if 'crl' not in config:
@@ -114,6 +127,11 @@ def add_cert_to_crl(crlid, certid, reason=5):
 
     if certid in revoked_list:
         return 'Revocation already OK'
+
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__) as api:
+            pfrest_certificate.revoke(api, crl['crlid'], certid, reason)
+        return 'Revocation OK'
 
     # Base Settings
     cmd = ['php', '/opt/helpers/crl_revoke.php', crlid, certid, reason]
@@ -198,6 +216,14 @@ def add_user_certificate(username, caref=None):
                 error = 'User {0} already have a certificate for ca {1}'.format(username, caref)
                 return None, error
 
+    if _pfrest():
+        dn = __salt__['config.get']('pfsense:pki:dn', {})
+        with pfrest_module.session(__salt__, __opts__) as api:
+            cert = pfrest_certificate.generate_user_cert(api, username, caref, dn)
+        if not __opts__.get('test'):
+            __salt__['pfsense_user.add_cert'](username, cert['refid'])
+        return cert, None
+
     # All check are OK now create cert and get certid and return so as to update config
     cmd = ['php', '/opt/helpers/cert_create.php', username, username, caref]
 
@@ -227,8 +253,7 @@ def add_user_certificate(username, caref=None):
 
 def list_ca(all_data=False):
     """Return dict of ca."""
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     ret = {}
     if 'ca' not in config:
@@ -261,6 +286,11 @@ def get_ca(refid, all_data=False):
 
 def add_cert(refid, descr, crt, prv, caref=None, cert_type=None):
     """Add a certificate to the list."""
+    if _pfrest():
+        # pfrest assigns the refid and links the CA itself: the returned refid is the one to use
+        with pfrest_module.session(__salt__, __opts__) as api:
+            return pfrest_certificate.import_cert(api, descr, crt, prv, cert_type)
+
     client = _get_client()
     config = client.config_get()
 
@@ -296,6 +326,13 @@ def add_cert(refid, descr, crt, prv, caref=None, cert_type=None):
 
 
 def remove_cert(refid):
+    if _pfrest():
+        if get_cert_index(refid) is None:
+            raise CommandExecutionError('cert {0} does not exist'.format(refid))
+        with pfrest_module.session(__salt__, __opts__) as api:
+            pfrest_certificate.remove_cert(api, refid)
+        return True
+
     client = _get_client()
     config = client.config_get()
 
@@ -319,8 +356,7 @@ def remove_cert(refid):
 
 def list_cert(all_data=False):
     """Return dict of cert."""
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     ret = {}
     if 'cert' not in config:
@@ -360,8 +396,7 @@ def get_cert(refid, all_data=False):
 
 def get_cert_index(refid):
     """Return index of a cert, needed for openvpn."""
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     index = 0
     if 'cert' not in config:
@@ -378,8 +413,7 @@ def get_cert_index(refid):
 def list_cert_with_status():
     """Return a dict with certs."""
 
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
     result = {}
 
     # Get all certs and keep only user type
@@ -432,6 +466,13 @@ def patch_cert(refid, crt=None, prv=None, descr=None):
     if crt is None and prv is None and descr is None:
         raise SaltInvocationError('nothing to update; provide at least one of crt/prv/descr')
 
+    if _pfrest():
+        if get_cert_index(refid) is None:
+            raise CommandExecutionError('cert {0} does not exist'.format(refid))
+        with pfrest_module.session(__salt__, __opts__) as api:
+            pfrest_certificate.patch_cert(api, refid, crt, prv, descr)
+        return True
+
     client = _get_client()
     config = client.config_get()
 
@@ -478,8 +519,7 @@ def _increase_ca_serial(caref):
     return serial
 
 def _get_ca(caref):
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     ca = None
     ca_index = 0

@@ -20,8 +20,6 @@ SCENARIOS = sorted(p.name for p in (Path(__file__).parent / "scenarios").iterdir
 
 # Known failures of the FauxAPI backend, fixed by the pfrest migration (lot 4)
 KNOWN_ISSUES = {
-    ("vlan", "idempotence"): "set_vlan always rewrites and reports Updated",
-    ("interface", "idempotence"): "set_interface always rewrites and reports Updated",
     ("alias", "test_mode_result"): "test mode returns result True instead of None",
 }
 

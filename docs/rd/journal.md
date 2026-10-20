@@ -108,3 +108,65 @@ Une entrée par séance de travail : date, lot et tâche, verrous concernés, ce
   - effet de l'access list ;
   - restauration de `backup.json` après une mise à jour de pfSense ;
   - appels `local_user_set` et `local_group_set` en ligne de commande.
+
+## 2026-10-20 — Lot 4 : migration des modules
+
+- **Socle.** Chaque module garde ses fonctions publiques et aiguille vers un util typé `_utils/pfrest_<domaine>.py`.
+  - Chaque écriture se fait dans une session verrouillée (V2).
+  - L'apply est immédiat par défaut, comme avec FauxAPI. Il peut être différé par pillar avec le state `pfsense_apply` (V3).
+  - La synchronisation HA a lieu après les écritures, là où FauxAPI la faisait.
+- **Modules migrés :** alias, syslog, règles de filtrage, NAT, utilisateurs et groupes, clés SSH, cron, VLAN, static mappings DHCP, serveurs DNS, interfaces et passerelles, certificats et CRL, OpenVPN (lecture et export), pairs WireGuard.
+- **Constats et choix (V5, équivalence sémantique) :**
+  - **Lectures.** Elles restent sur `config.xml` partout où pfrest masque des secrets (hash, clés privées, PSK) ou ne modélise pas un champ (identifiant cron, passerelles DNS) : les formes renvoyées restent exactement celles de FauxAPI.
+  - **Mots de passe.** Le pillar porte des hashes bcrypt, que pfrest ne peut pas recevoir. Ils passent par un helper local sur liste blanche.
+  - **Règles et NAT.** Une conversion bidirectionnelle conserve les objets et la clé métier existants :
+    - `wanip` devient `wan:ip`, la négation `!` est conservée ;
+    - les plages `-` deviennent `:` ;
+    - l'interface passe en liste.
+  - **Contrat.** Les champs requis du schéma OpenAPI sont parfois conditionnels (interfaces, PKI). Le faux serveur en tient compte.
+- **Défauts trouvés et corrigés en route :**
+  - `sourceip` vide non idempotent (syslog) ;
+  - mot de passe réécrit à chaque passage (user) ;
+  - VLAN réécrit à chaque passage.
+- **Reportés au lot 5 :** `webgui_settings` et `dhcp_kea`, qui dépendent de champs non modélisés (helper générique).
+
+## 2026-10-20 — Lot 5 : manques fonctionnels
+
+- **Helper générique `config_path.php`** (V4). Il lit, écrit ou supprime un chemin de `config.xml` sur liste blanche (8 motifs), puis lance des actions d'application elles aussi sur liste blanche.
+  - Les helpers PHP sont désormais testés contre des stubs pfSense : `config_path`, amorçage de l'API, champs utilisateur.
+  - Ces tests ont confirmé l'idempotence de l'amorçage.
+- **Modules couverts par ce helper :** althostname, sshguard (même application que l'ancien helper), PPPoE noyau, sudo, agent zabbix, clés WebGUI non modélisées, passerelles par serveur DNS, `numberofitems` du syslog.
+- **Migration Kea** (V8) :
+  - même traduction, JSON Kea par le helper ;
+  - backend basculé en dernier par l'API, puis un seul apply DHCP ;
+  - tout autre écart en attente est refusé.
+- **EXP-04.** Conclue par analyse du code du paquet : les endpoints ajoutés seraient effacés à chaque réinstallation, donc le helper générique est retenu.
+- **Restent non couverts, avec refus explicite :** alias URL table et champs avancés des règles. Les boot environments restent sur leur helper dédié.
+
+## 2026-10-20 — Lot 6 : recettes de déploiement Salt
+
+- **33 recettes au même format** (9 sections) : 8 socle, 19 par domaine, 6 d’exploitation.
+- **Exemples réels** dans `examples/` : un pillar et 22 SLS.
+- **Validation hors ligne**, à défaut de lab (T6.5) :
+  - structure des recettes et existence des fichiers cités ;
+  - rendu Jinja/YAML de chaque SLS ;
+  - existence de chaque fonction de state ou de module appelée.
+
+## 2026-10-20 — Lot 7 : plan de déploiement
+
+- **Plan exécutable** (`docs/migration/rollout.md`), non exécuté faute de fenêtre et de lab :
+  - un pilote à exposition minimale ;
+  - trois vagues (37 amd64, 100 arm64, 4 paires HA) ;
+  - les cas armv7 (6) et les mises à jour pfSense préalables (7) ;
+  - la migration Kea en trois étapes ;
+  - les critères de passage et les indicateurs.
+- **Défaut corrigé en préparation :** le state interface réécrivait chaque passage, ce qui aurait déclenché un apply à chaque run sur pfrest.
+
+## 2026-10-20 — Lot 8 : capitalisation
+
+- **Nettoyage.** Suppression des helpers jamais appelés.
+  - Le backend FauxAPI est conservé, gelé, pour les 47 pare-feux hors périmètre.
+  - La désinstallation de FauxAPI est encadrée par un garde-fou : la recette 46 ne s'applique que si le pare-feu et tous ses modules sont sur pfrest.
+- **README et CHANGELOG** du dépôt.
+- **EXP-01** (V1) sur banc logiciel : 0 écriture sur un mauvais objet sur 1 000 opérations aléatoires avec résolution par clé métier, contre 105 sur 200 avec un identifiant mis en cache.
+- **Synthèse.** Statuts des verrous mis à jour ; résultats, contribution et synthèse rédigés. Les mesures de terrain restent à faire au pilote.

@@ -16,6 +16,8 @@ import logging
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_alias
+import pfrest_module
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -33,6 +35,10 @@ def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
 
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_alias')
+
+
 def _sync_ha():
     cmd = ['/etc/rc.filter_synchronize']
     __salt__['cmd.run_all'](cmd, python_shell=False)
@@ -46,6 +52,9 @@ def list_aliases():
     .. code-block:: bash
         salt '*' pfsense_aliases.list_aliases
     '''
+    if _pfrest():
+        return pfrest_alias.list_aliases(pfrest_module.client())
+
     client = _get_client()
     config = client.config_get()
 
@@ -150,6 +159,10 @@ def set_target(alias, target, type=None, descr=None, detail=None, url=None, upda
     else:
         targets = [str(target)]
 
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__, 'firewall') as api:
+            return pfrest_alias.set_target(api, alias, targets, type, descr, detail, url, updatefreq)
+
     is_already_ok = True
     current_targets = get_target(alias)
     if set(current_targets) != set(targets):
@@ -238,6 +251,10 @@ def rm_alias(alias):
     .. code-block:: bash
         salt '*' pfsense_aliases.rm_alias alias
     '''
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__, 'firewall') as api:
+            return pfrest_alias.rm_alias(api, alias)
+
     if not get_target(alias):
         return True
 

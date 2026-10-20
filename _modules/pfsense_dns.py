@@ -16,6 +16,9 @@ import logging
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_module
+import pfsense_config_path
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -55,6 +58,17 @@ def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
 
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_dns')
+
+
+def _config():
+    # dnsNgw keys are not exposed by pfrest: reads stay on the local config.xml
+    if _pfrest():
+        return pfsense_local.read_config()
+    return _get_client().config_get()
+
+
 def _generate_resolvconf():
     cmd = ['/etc/rc.resolv_conf_generate']
     __salt__['cmd.run_all'](cmd, python_shell=False)
@@ -64,8 +78,7 @@ def list_servers():
     """
     Return dns servers with their associated gateway, if present
     """
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     ret = []
     if 'dnsserver' not in config['system']:
@@ -127,6 +140,18 @@ def _setup_dns(wanted_dns, wanted_gateways, route_to_delete):
             cmd = "/sbin/route -q delete -host {0} {1}".format(dns, real_gateway)
             result = __salt__["cmd.run"](cmd)
             logging.warning("{0}".format(result))
+
+    if _pfrest():
+        # system/dns is always applied (resolv.conf, resolver reload, filter); the per server
+        # gateways (dnsNgw) are not modelled and go through config_path, then resolv.conf again
+        test = __opts__.get('test', False)
+        with pfrest_module.session(__salt__, __opts__, ha_sync=False) as api:
+            api.patch('system/dns', {'dnsserver': wanted_dns})
+            for index, gateway in enumerate(wanted_gateways):
+                apply = ['system_resolvconf_generate'] if index == len(wanted_gateways) - 1 else []
+                pfsense_config_path.set_path(__salt__, 'system/dns{0}gw'.format(index + 1), gateway or '',
+                                             apply=apply, test=test)
+        return True
 
     client = _get_client()
     config = client.config_get()

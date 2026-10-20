@@ -1,5 +1,21 @@
 # Migration d'une couche de gestion déclarative pfSense : de FauxAPI vers pfSense REST API v2
 
+## État d'avancement (2026-10-20)
+
+| Lot | PR | Livré | Reste à faire sur le terrain |
+|---|---|---|---|
+| 0 | #8, #9 | inventaires, périmètre FreeBSD 14+, couverture | — |
+| 1 | #10 | outillage, CI, oracle, scénarios, corrections, tests Kea | lab abandonné : scénarios `-m lab` non joués |
+| 2 | #11 | client pfrest, contrat, sélecteur de backend | — |
+| 3 | #12 | cycle de vie du paquet, amorçage | vérifier sur un pare-feu réel (pilote) |
+| 4 | #13 | 14 modules sur pfrest | registre d'écarts `config.xml` au pilote |
+| 5 | #14 | helper générique, 9 manques, Kea | captures DHCP, option 66 |
+| 6 | #15 | 33 recettes vérifiées hors ligne | application réelle |
+| 7 | #16 | plan de déploiement exécutable | exécution du pilote et des vagues |
+| 8 | #17 | nettoyage, désinstallation encadrée, synthèse R&D | retrait du code FauxAPI après le dernier pare-feu hors périmètre |
+
+Décision du 2026-10-20 : pas de lab. Le banc logiciel le remplace (faux pfrest validé par le contrat, stubs PHP), et les mesures de terrain passent au pilote.
+
 ## Contexte
 
 Le projet `salt-pfsense` regroupe des extensions SaltStack pour pfSense. Il pilote de façon déclarative la configuration d'un parc de pare-feux (filtrage, NAT, alias, utilisateurs, PKI, VPN, DHCP, VLAN, DNS, journalisation, cron, etc.). Volume actuel : ≈ 9 700 lignes, dont 23 modules d'exécution (`_modules/`), 16 states (`_states/`), 1 grain (`_grains/pfsense.py`), 1 client HTTP (`_utils/pfsense.py`) et ≈ 1 650 lignes de helpers PHP (`helpers*/`). Le projet n'a ni test, ni outillage qualité, ni documentation.

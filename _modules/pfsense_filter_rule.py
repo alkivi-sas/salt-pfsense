@@ -17,6 +17,8 @@ import time
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_filter_rule
+import pfrest_module
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -353,7 +355,20 @@ class FilterRule:
         return object_dict
 
 
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_filter_rule')
+
+
 def enable_logging_for_all_rules():
+    if _pfrest():
+        ret = []
+        with pfrest_module.session(__salt__, __opts__, 'firewall') as api:
+            for rule in pfrest_filter_rule.config_rules(api):
+                if 'log' not in rule:
+                    ret.append('Log enabled for {0}'.format(FilterRule.from_config(rule).to_string()))
+                    pfrest_filter_rule.patch_rule(api, rule['_id'], {'log': True})
+        return ret
+
     client = _get_client()
     config = client.config_get()
 
@@ -395,8 +410,12 @@ def list_rules(interface=None, floating=None, out=None):
         salt '*' pfsense_nat_rule.list_rules out=string interface=wan
         salt '*' pfsense_nat_rule.list_rules out=dict
     '''
-    client = _get_client()
-    config = client.config_get()
+    if _pfrest():
+        rules_data = pfrest_filter_rule.config_rules(pfrest_module.client())
+    else:
+        client = _get_client()
+        config = client.config_get()
+        rules_data = config['filter'].get('rule', []) if isinstance(config['filter'], dict) else []
 
     if out is None:
         out = 'dict'
@@ -406,10 +425,7 @@ def list_rules(interface=None, floating=None, out=None):
         raise CommandExecutionError('out must be in {0}'.format(ok_out))
 
     ret = []
-    if 'rule' not in config['filter']:
-        return ret
-
-    for data in config['filter']['rule']:
+    for data in rules_data:
         rule = FilterRule.from_config(data)
 
         if interface is not None:
@@ -476,6 +492,13 @@ def add_rule(index=0, **kwargs):
     if is_rule_valid is not True:
         raise CommandExecutionError('Rule is not valid because "{0}"'.format(is_rule_valid))
 
+    if _pfrest():
+        # Same position as the FauxAPI backend: first rule of the interface (or floating) group + index
+        final_index = _get_index_for_rule(test_rule) + index
+        with pfrest_module.session(__salt__, __opts__, 'firewall') as api:
+            pfrest_filter_rule.add_rule(api, test_rule.to_dict(), final_index)
+        return test_rule.to_dict()
+
     client = _get_client()
     config = client.config_get()
 
@@ -523,6 +546,11 @@ def rm_rule(descr, interface=None, floating=None):
 
     rule_to_delete = get_rule(descr, interface=interface, floating=floating)
     if rule_to_delete is None:
+        return True
+
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__, 'firewall') as api:
+            pfrest_filter_rule.rm_rules(api, lambda rule: FilterRule.from_config(rule) == rule_to_delete)
         return True
 
     client = _get_client()
@@ -580,6 +608,14 @@ def patch_rule(descr=None, tracker=None, interface=None, floating=None, patch={}
 
     if not has_changes:
         logging.debug("No changes")
+        return True
+
+    if _pfrest():
+        changes = {key: patch[key] for key in allowed_keys if key in patch}
+        with pfrest_module.session(__salt__, __opts__, 'firewall') as api:
+            for rule in pfrest_filter_rule.config_rules(api):
+                if FilterRule.from_config(rule) == rule_to_patch:
+                    pfrest_filter_rule.patch_rule(api, rule['_id'], changes)
         return True
 
     client = _get_client()

@@ -18,6 +18,8 @@ import json
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_module
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -35,10 +37,20 @@ def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
 
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_wireguard')
+
+
+def _config():
+    # pfrest hides the keys: reads stay on the local config.xml
+    if _pfrest():
+        return pfsense_local.read_config()
+    return _get_client().config_get()
+
+
 def list_tunnels():
     """Return dict of tunnels."""
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     ret = {}
     if 'installedpackages' not in config:
@@ -79,8 +91,7 @@ def get_tunnel(name):
 
 def list_peers():
     """Return dict of tunnels."""
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     ret = {}
     if 'installedpackages' not in config:
@@ -141,6 +152,21 @@ def add_peer(name,
         return f"Public key is not of length 44, something is wrong"
 
     get_tunnel(tunnel)
+
+    if _pfrest():
+        body = {
+            'descr': name,
+            'tun': tunnel,
+            'persistentkeepalive': int(persistentkeepalive),
+            'publickey': publickey,
+            'enabled': bool(enabled),
+            'allowedips': [{'address': allowip, 'mask': 32, 'descr': ''}],
+        }
+        if presharedkey:
+            body['presharedkey'] = presharedkey
+        with pfrest_module.session(__salt__, __opts__, 'wireguard', ha_sync=False) as api:
+            api.write_checked('POST', 'vpn/wireguard/peer', 'vpn/wireguard/peers', {'publickey': publickey}, body=body)
+        return dict(body, presharedkey='')
 
     client = _get_client()
     config = client.config_get()

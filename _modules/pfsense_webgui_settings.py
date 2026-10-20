@@ -16,6 +16,9 @@ import logging
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_module
+import pfsense_config_path
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -33,6 +36,20 @@ def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
 
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_webgui_settings')
+
+
+def _config():
+    if _pfrest():
+        return pfsense_local.read_config()
+    return _get_client().config_get()
+
+
+# WebGUISettings fields of pfrest; the other webgui keys go through config_path
+MODELLED = ('protocol', 'port', 'sslcertref')
+
+
 def get_setting(name):
     '''
     Return the alternatives hostnames of the webgui
@@ -40,8 +57,7 @@ def get_setting(name):
     .. code-block:: bash
         salt '*' pfsense_webgui_settings.get_setting nodnsrebindcheck
     '''
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     if name not in config['system']['webgui']:
         return False
@@ -65,6 +81,19 @@ def set_setting(name, value):
 
     current_value = get_setting(name)
     if current_value == value:
+        return True
+
+    if _pfrest():
+        test = __opts__.get('test', False)
+        with pfrest_module.session(__salt__, __opts__, ha_sync=False) as api:
+            if name in MODELLED:
+                # always applied by pfrest: the WebGUI (and the API) restart
+                api.patch('system/webgui/settings', {name: int(value) if name == 'port' else value})
+            elif name in ['nodnsrebindcheck', 'nohttpreferercheck'] and not value:
+                pfsense_config_path.delete_path(__salt__, 'system/webgui/' + name, test=test)
+            else:
+                flag = name in ['nodnsrebindcheck', 'nohttpreferercheck']
+                pfsense_config_path.set_path(__salt__, 'system/webgui/' + name, '' if flag else value, test=test)
         return True
 
 

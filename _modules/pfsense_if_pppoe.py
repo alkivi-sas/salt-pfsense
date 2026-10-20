@@ -16,6 +16,9 @@ import logging
 
 # Import Salt libs
 import pfsense
+import pfrest_module
+import pfsense_config_path
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
 )
@@ -40,13 +43,22 @@ def _reboot_if_requested(reboot, changed):
         __salt__['cmd.run']('shutdown -r +1')
 
 
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_if_pppoe')
+
+
+def _config():
+    if _pfrest():
+        return pfsense_local.read_config()
+    return _get_client().config_get()
+
+
 def _set_use_if_pppoe(present, reboot=True):
     """
     Ensure the <use_if_pppoe> flag presence (present=True) or absence (present=False)
     under config['system'].
     """
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     if 'system' not in config:
         raise CommandExecutionError('config is not valid: key {0} not found'.format('system'))
@@ -56,6 +68,17 @@ def _set_use_if_pppoe(present, reboot=True):
     currently_present = 'use_if_pppoe' in system_cfg
     if currently_present == present:
         # No change required
+        return True
+
+    if _pfrest():
+        test = __opts__.get('test', False)
+        with pfrest_module.session(__salt__, __opts__, ha_sync=False):
+            if present:
+                pfsense_config_path.set_path(__salt__, 'system/use_if_pppoe', '', test=test)
+            else:
+                pfsense_config_path.delete_path(__salt__, 'system/use_if_pppoe', test=test)
+        if not test:
+            _reboot_if_requested(reboot, True)
         return True
 
     if present:
@@ -111,8 +134,7 @@ def status():
     .. code-block:: bash
         salt '*' pfsense_if_pppoe.status
     """
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     if 'system' not in config:
         raise CommandExecutionError('config is not valid: key {0} not found'.format('system'))

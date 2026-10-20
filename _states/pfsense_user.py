@@ -67,9 +67,11 @@ def present(
     need_changes = False
     for key, value in wanted_data.items():
         if key == 'password':
-            logger.debug('password change was requested')
-            need_changes = True
-            break
+            # The pillar holds the bcrypt hash stored in config.xml
+            if user.get('bcrypt-hash') != value:
+                logger.debug('password change was requested')
+                need_changes = True
+                break
         elif key == 'disabled':
             if value:
                 if key not in user:

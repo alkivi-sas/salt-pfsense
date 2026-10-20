@@ -1,6 +1,8 @@
 import copy
 import importlib.util
 import itertools
+import json
+import re
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -90,3 +92,96 @@ def load_module() -> Loader:
 @pytest.fixture
 def fake_fauxapi() -> Callable[[dict[str, Any]], FakeFauxapi]:
     return FakeFauxapi
+
+
+def bind(module: ModuleType, name: str) -> dict[str, Any]:
+    """Public functions of a loaded module as __salt__ entries (<name>.<function>)."""
+    return {
+        "{0}.{1}".format(name, attr): getattr(module, attr)
+        for attr in dir(module)
+        if not attr.startswith("_") and callable(getattr(module, attr))
+    }
+
+
+class PfrestEnv:
+    """FakePfrest wired into pfrest_module, plus the __salt__ a module needs on the pfrest backend."""
+
+    def __init__(self, server: Any, apply_mode: str, pillar: dict[str, Any]) -> None:
+        self.server = server
+        self.commands: list[list[str]] = []
+        self.pillar = {"pfsense:api_backend": "pfrest", "pfsense:pfrest:apply": apply_mode}
+        self.pillar.update(pillar)
+        self.salt: dict[str, Any] = {
+            "config.get": lambda key, default=None: self.pillar.get(key, default),
+            "pillar.get": lambda key, default=None: self.pillar.get(key, default),
+            "cmd.run_all": self._run_all,
+        }
+
+    def _run_all(self, cmd: list[str], **kwargs: Any) -> dict[str, Any]:
+        self.commands.append(cmd)
+        return {"retcode": 0, "stdout": "", "stderr": ""}
+
+
+@pytest.fixture
+def pfrest_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Callable[..., PfrestEnv]:
+    import pfrest
+    import pfrest_module
+    from fake_pfrest import FakePfrest
+
+    def make(
+        collections: list[Any], data: dict[str, Any] | None = None, apply_mode: str = "immediate", **pillar: Any
+    ) -> PfrestEnv:
+        server = FakePfrest(collections, data=data or {})
+        monkeypatch.setattr(pfrest, "LOCK_FILE", str(tmp_path / "salt-pfsense.lock"))
+        monkeypatch.setattr(
+            pfrest_module,
+            "client",
+            lambda test=False: pfrest.PfrestClient(api_key="0" * 64, session=server, dry_run=test),
+        )
+        return PfrestEnv(server, apply_mode, {k.replace("__", ":"): v for k, v in pillar.items()})
+
+    return make
+
+
+CONFIG_PATH_HELPER = "/opt/helpers/config_path.php"
+# Same allowlist as the PHP helper, read from it so both stay in sync
+CONFIG_PATH_ALLOWED = [
+    re.compile(pattern) for pattern in re.findall(r"'#(\^[^#]+)#'", (ROOT / "helpers" / "config_path.php").read_text())
+]
+
+
+class ConfigPath:
+    """Emulates config_path.php on an in-memory config.xml, recording the apply actions."""
+
+    def __init__(self, config: dict[str, Any]) -> None:
+        self.config = config
+        self.applied: list[str] = []
+        self.commands: list[list[str]] = []
+
+    def node(self, path: str) -> tuple[Any, str]:
+        parent: Any = self.config
+        keys = path.split("/")
+        for key in keys[:-1]:
+            parent = parent[int(key)] if isinstance(parent, list) else parent.setdefault(key, {})
+        return parent, keys[-1]
+
+    def run_all(self, cmd: list[str], stdin: str = "", **kwargs: Any) -> dict[str, Any]:
+        if cmd != ["php", CONFIG_PATH_HELPER]:
+            self.commands.append(cmd)
+            return {"retcode": 0, "stdout": "", "stderr": ""}
+        request = json.loads(stdin)
+        if not any(pattern.match(request["path"]) for pattern in CONFIG_PATH_ALLOWED):
+            return {"retcode": 1, "stdout": "", "stderr": "path {0} is not allowed".format(request["path"])}
+        parent, key = self.node(request["path"])
+        current = parent.get(key)
+        if request["op"] == "get":
+            return {"retcode": 0, "stdout": json.dumps({"value": current}), "stderr": ""}
+        if request["op"] == "set":
+            changed = current != request["value"]
+            parent[key] = request["value"]
+        else:
+            changed = key in parent
+            parent.pop(key, None)
+        if changed:
+            self.applied.extend(request.get("apply", []))
+        return {"retcode": 0, "stdout": json.dumps({"changed": changed}), "stderr": ""}

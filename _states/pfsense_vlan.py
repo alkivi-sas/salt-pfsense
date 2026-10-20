@@ -33,6 +33,10 @@ def present(
             ret['comment'] = 'VLAN is set to be updated'
         return ret
 
+    if is_present and is_present.get('descr', '') == (descr or '') and is_present.get('pcp', '') == ('' if pcp is None else str(pcp)):
+        ret['comment'] = 'VLAN {0} is already OK'.format(vlanif)
+        return ret
+
     data = __salt__['pfsense_vlan.set_vlan'](
             interface,
             tag,
