@@ -15,6 +15,19 @@ from urllib.parse import urlparse
 CONTRACT = json.loads((Path(__file__).parent.parent / "pfrest" / "contract" / "v2.10.2.json").read_text())
 CONTROL = {"apply", "async", "dry_run", "id", "parent_id", "placement"}
 QUERY_CONTROL = {"limit", "offset", "sort_by", "sort_order", "sort_flags", "query"}
+# Fields the schema lists as required but pfrest only requires conditionally (e.g. on typev4/typev6)
+CONDITIONAL_REQUIRED = {
+    "interface": {
+        "gateway_6rd",
+        "ipaddr",
+        "ipaddrv6",
+        "prefix_6rd",
+        "prefix_6rd_v4plen",
+        "subnet",
+        "subnetv6",
+        "track6_interface",
+    },
+}
 
 
 @dataclass
@@ -32,6 +45,8 @@ class Collection:
     plural: str | None = None
     parented: bool = False
     singleton: bool = False
+    # text ids (interfaces: wan, lan, optN) instead of positions
+    keyed: bool = False
 
 
 @dataclass
@@ -48,7 +63,8 @@ class FakePfrest:
             self._by_path[collection.singular] = (collection, False)
             if collection.plural:
                 self._by_path[collection.plural] = (collection, True)
-            self.data.setdefault(collection.singular, {} if (collection.parented or collection.singleton) else [])
+            keyed = collection.parented or collection.singleton or collection.keyed
+            self.data.setdefault(collection.singular, {} if keyed else [])
 
     # helpers for tests
     # =========================================================================
@@ -105,12 +121,15 @@ class FakePfrest:
                 return self._error(400, "FIELD_UNKNOWN", name)
             if model[name].get("readOnly"):
                 return self._error(400, "FIELD_READ_ONLY", name)
-        missing = [name for name in spec.get("required", []) if name not in body]
+        relaxed = CONDITIONAL_REQUIRED.get(path, set())
+        missing = [name for name in spec.get("required", []) if name not in body and name not in relaxed]
         if missing:
             return self._error(400, "FIELD_REQUIRED", ",".join(missing))
         return None
 
     def _listing(self, collection: Collection, parent_id: Any = None) -> list[dict[str, Any]]:
+        if collection.keyed:
+            return [dict(obj, id=key) for key, obj in self.data[collection.singular].items()]
         if collection.parented:
             parents = [parent_id] if parent_id is not None else list(self.data[collection.singular])
             return [
@@ -127,7 +146,8 @@ class FakePfrest:
         if plural:
             filters = {k: v for k, v in params.items() if k not in QUERY_CONTROL}
             return self._ok([obj for obj in listing if all(obj.get(k) == v for k, v in filters.items())])
-        matches = [obj for obj in listing if obj["id"] == int(params["id"])]
+        wanted = params["id"] if collection.keyed else int(params["id"])
+        matches = [obj for obj in listing if obj["id"] == wanted]
         return self._ok(matches[0]) if matches else self._error(404, "MODEL_OBJECT_NOT_FOUND", str(params))
 
     def _write(self, collection: Collection, method: str, body: dict[str, Any]) -> Response:
@@ -139,6 +159,8 @@ class FakePfrest:
                 self.data[collection.singular].update(body)
                 self.external_write("api")
             return self._ok(copy.deepcopy(self.data[collection.singular]))
+        if collection.keyed:
+            return self._write_keyed(collection, method, body, dry_run)
         parent_id = body.pop("parent_id", None)
         store = self.objects(collection.singular, parent_id) if collection.parented else self.data[collection.singular]
         placement = body.pop("placement", None)
@@ -157,7 +179,32 @@ class FakePfrest:
             self.external_write("api")
         return self._ok(dict(store[index], id=index))
 
+    def _write_keyed(self, collection: Collection, method: str, body: dict[str, Any], dry_run: bool) -> Response:
+        store = self.data[collection.singular]
+        if method == "POST":
+            key = next("opt{0}".format(n) for n in range(1, 1000) if "opt{0}".format(n) not in store)
+            if not dry_run:
+                store[key] = body
+                self.external_write("api")
+            return self._ok(dict(body, id=key))
+        key = body.pop("id")
+        if key not in store:
+            return self._error(404, "MODEL_OBJECT_NOT_FOUND", str(key))
+        if not dry_run:
+            store[key].update(body)
+            self.external_write("api")
+        return self._ok(dict(store[key], id=key))
+
     def _delete(self, collection: Collection, params: dict[str, Any]) -> Response:
+        if collection.keyed:
+            store = self.data[collection.singular]
+            if params["id"] not in store:
+                return self._error(404, "MODEL_OBJECT_NOT_FOUND", str(params["id"]))
+            obj = store[params["id"]]
+            if not params.get("dry_run"):
+                del store[params["id"]]
+                self.external_write("api")
+            return self._ok(dict(obj, id=params["id"]))
         parent_id = params.get("parent_id")
         store = self.objects(collection.singular, parent_id) if collection.parented else self.data[collection.singular]
         index = int(params["id"])
