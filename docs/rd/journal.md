@@ -161,3 +161,12 @@ Une entrée par séance de travail : date, lot et tâche, verrous concernés, ce
   - la migration Kea en trois étapes ;
   - les critères de passage et les indicateurs.
 - **Défaut corrigé en préparation :** le state interface réécrivait chaque passage, ce qui aurait déclenché un apply à chaque run sur pfrest.
+
+## 2026-10-20 — Lot 8 : capitalisation
+
+- **Nettoyage.** Suppression des helpers jamais appelés.
+  - Le backend FauxAPI est conservé, gelé, pour les 47 pare-feux hors périmètre.
+  - La désinstallation de FauxAPI est encadrée par un garde-fou : la recette 46 ne s'applique que si le pare-feu et tous ses modules sont sur pfrest.
+- **README et CHANGELOG** du dépôt.
+- **EXP-01** (V1) sur banc logiciel : 0 écriture sur un mauvais objet sur 1 000 opérations aléatoires avec résolution par clé métier, contre 105 sur 200 avec un identifiant mis en cache.
+- **Synthèse.** Statuts des verrous mis à jour ; résultats, contribution et synthèse rédigés. Les mesures de terrain restent à faire au pilote.
