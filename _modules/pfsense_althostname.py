@@ -16,6 +16,9 @@ import logging
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_module
+import pfsense_config_path
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -33,6 +36,16 @@ def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
 
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_althostname')
+
+
+def _config():
+    if _pfrest():
+        return pfsense_local.read_config()
+    return _get_client().config_get()
+
+
 def _sync_ha():
     cmd = ['/etc/rc.filter_synchronize']
     __salt__['cmd.run_all'](cmd, python_shell=False)
@@ -45,8 +58,7 @@ def list_hostnames():
     .. code-block:: bash
         salt '*' pfsense_althostnames.list_hostnames
     '''
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     if 'althostnames' not in config['system']['webgui']:
         return []
@@ -88,6 +100,13 @@ def add_hostname(hostname):
 
     current_hostnames.append(hostname)
 
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__):
+            pfsense_config_path.set_path(__salt__, 'system/webgui/althostnames', ' '.join(current_hostnames),
+                                         test=__opts__.get('test', False))
+        _sync_ha()
+        return True
+
     client = _get_client()
     config = client.config_get()
 
@@ -112,6 +131,14 @@ def rm_hostname(hostname):
     '''
     current_hostnames = list_hostnames()
     if hostname not in current_hostnames:
+        return True
+
+    if _pfrest():
+        remaining = ' '.join(h for h in current_hostnames if h != hostname)
+        with pfrest_module.session(__salt__, __opts__):
+            pfsense_config_path.set_path(__salt__, 'system/webgui/althostnames', remaining,
+                                         test=__opts__.get('test', False))
+        _sync_ha()
         return True
 
     client = _get_client()
