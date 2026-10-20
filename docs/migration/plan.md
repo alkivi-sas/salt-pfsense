@@ -12,7 +12,7 @@
 | 5 | #14 | helper générique, 9 manques, Kea | captures DHCP, option 66 |
 | 6 | #15 | 33 recettes vérifiées hors ligne | application réelle |
 | 7 | #16 | plan de déploiement exécutable | exécution du pilote et des vagues |
-| 8 | à venir | nettoyage, désinstallation encadrée, synthèse R&D | retrait du code FauxAPI après le dernier pare-feu hors périmètre |
+| 8 | #17 | nettoyage, désinstallation encadrée, synthèse R&D | retrait du code FauxAPI après le dernier pare-feu hors périmètre |
 
 Décision du 2026-10-20 : pas de lab. Le banc logiciel le remplace (faux pfrest validé par le contrat, stubs PHP), et les mesures de terrain passent au pilote.
 
