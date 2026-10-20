@@ -264,8 +264,8 @@ def export_openvpn_config(username, addr, vpnid=None, caref=None, conf_type='con
     if not wanted_certid:
         raise CommandExecutionError('Unable to find a user certificate')
 
-    cert_index = __salt__['pfsense_certificate.get_cert_index'](certid)
-    if not cert_index:
+    cert_index = __salt__['pfsense_certificate.get_cert_index'](wanted_certid)
+    if cert_index is None:
         raise CommandExecutionError('Unable to get cert index.')
 
     # Check that ca match vpn caref
@@ -273,7 +273,7 @@ def export_openvpn_config(username, addr, vpnid=None, caref=None, conf_type='con
         raise CommandExecutionError('OpenVPN server CA {0} does not match wanted CA {1}'.format(server['caref'], caref))
 
     # Launch generation
-    cmd = ['php', '/opt/helpers/export_openvpn_config.php', vpnid, cert_index, caref, addr, conf_type]
+    cmd = ['php', '/opt/helpers/export_openvpn_config.php', vpnid, str(cert_index), caref, addr, conf_type]
 
     result = __salt__['cmd.run_all'](cmd,
                                      python_shell=False)
