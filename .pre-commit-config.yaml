@@ -1,6 +1,18 @@
 # Legacy code (Salt modules, states, utils, grains, PHP helpers) is not reformatted in bulk:
-# a file leaves the exclude list when it is rewritten (lot 4), see docs/migration/plan.md (T1.1).
-exclude: ^(_modules|_states|_utils|_grains|helpers[^/]*)/
+# a file leaves this list when it is rewritten, see docs/migration/plan.md (T1.1).
+# New code (e.g. _utils/pfrest*.py) is checked.
+exclude: |
+  (?x)
+    ^helpers[^/]*/
+    | ^_grains/pfsense\.py$
+    | ^_modules/pfsense_(alias|althostname|be|certificate|config|cron|dhcp_kea|dhcp_static_map|dns)\.py$
+    | ^_modules/pfsense_(filter_rule|gateway|if_pppoe|interface|nat_rule|openvpn|ssh|sshguard_whitelist)\.py$
+    | ^_modules/pfsense_(sudo_configuration|syslog_configuration|user|vlan|webgui_settings|wireguard)\.py$
+    | ^_modules/pfsense_zabbix_configuration\.py$
+    | ^_states/pfsense_(alias|althostname|cron|dhcp_kea|dhcp_static_map|dns|filter_rule|interface)\.py$
+    | ^_states/pfsense_(nat_rule|ssh_auth|sshguard_whitelist|sudo_configuration|syslog_configuration)\.py$
+    | ^_states/pfsense_(user|user_cert|vlan|zabbix_configuration)\.py$
+    | ^_utils/pfsense\.py$
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks

@@ -37,6 +37,7 @@ import logging
 
 # Import Salt libs
 import pfsense
+import pfsense_local
 from salt.exceptions import SaltInvocationError
 
 logger = logging.getLogger(__name__)
@@ -104,6 +105,9 @@ def _get_client():
 
 
 def _get_config():
+    # pfrest has no raw config_get: the minion reads config.xml locally (T2.8)
+    if pfsense.get_backend(__salt__["config.get"], __virtualname__) == "pfrest":
+        return pfsense_local.read_config()
     return _get_client().config_get()
 
 
