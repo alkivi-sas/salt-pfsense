@@ -19,7 +19,7 @@ def present(name, caref=None):
            'comment': ''}
 
     # Test user exist ?
-    user = __salt__['pfsense_user.get_user'](name)
+    _, user = __salt__['pfsense_user.get_user'](name)
     if not user:
         ret['result'] = False
         ret['comment'] = 'User {0} does not exist'.format(name)
@@ -29,7 +29,7 @@ def present(name, caref=None):
     if caref is None:
         cas = __salt__['pfsense_certificate.list_ca']()
         if len(cas.keys()) == 1:
-            caref = cas.keys()[0]
+            caref = list(cas)[0]
         else:
             ret['result'] = False
             ret['comment'] = 'Unable to find a CA, please add caref parameter'
@@ -69,7 +69,7 @@ def present(name, caref=None):
     else:
         ret['comment'] = 'Certificate created'
         ret['changes'] = cert
-        return ret
+    return ret
 
 
 def revoked(name, crlid=None, certid=None):

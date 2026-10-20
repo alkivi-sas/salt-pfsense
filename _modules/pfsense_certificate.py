@@ -178,7 +178,7 @@ def add_user_certificate(username, caref=None):
     cas = list_ca()
     if not caref:
         if len(cas.keys()) == 1:
-            caref = cas.keys()[0]
+            caref = list(cas)[0]
         else:
             error = 'you need to specify a caref, because multiple are found.'
             return None, error
@@ -186,7 +186,7 @@ def add_user_certificate(username, caref=None):
         error = 'Unknow ca {0}'.format(caref)
         return None, error
 
-    user = __salt__['pfsense_user.get_user'](username)
+    _, user = __salt__['pfsense_user.get_user'](username)
     if not user:
         error = 'User {0} has not been found'.format(username)
         return None, error
@@ -254,7 +254,7 @@ def get_ca(refid, all_data=False):
     """Return specific crl."""
     cas = list_ca(all_data)
     if refid not in cas:
-        raise None
+        return None
     else:
         return cas[refid]
 
@@ -474,7 +474,7 @@ def _increase_ca_serial(caref):
     patch_ca['ca'][ca_index]['serial'] = str(serial)
     response = client.config_patch(patch_ca)
     if response['message'] != 'ok':
-        raise CommandExecutionError('unable to increment serial', id_type)
+        raise CommandExecutionError('unable to increment serial', response['message'])
     return serial
 
 def _get_ca(caref):
