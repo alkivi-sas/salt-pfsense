@@ -13,6 +13,7 @@ import logging
 import pfsense
 import pfrest_module
 import pfrest_syslog
+import pfsense_config_path
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -81,7 +82,11 @@ def get_setting(name):
         salt '*' pfsense_webgui_settings.get_setting nodnsrebindcheck
     """
     if _pfrest():
-        return pfrest_syslog.get_setting(pfrest_module.client(), name)
+        try:
+            return pfrest_syslog.get_setting(pfrest_module.client(), name)
+        except pfrest_syslog.NotCovered:
+            value = pfsense_config_path.get_path(__salt__, "syslog/" + name)
+            return False if value is None else value
 
     client = _get_client()
     config = client.config_get()
@@ -113,7 +118,12 @@ def set_setting(name, value):
 
     if _pfrest():
         with pfrest_module.session(__salt__, __opts__, ha_sync=False) as api:
-            return pfrest_syslog.set_setting(api, name, value)
+            try:
+                return pfrest_syslog.set_setting(api, name, value)
+            except pfrest_syslog.NotCovered:
+                pfsense_config_path.set_path(__salt__, "syslog/" + name, value, apply=["system_syslogd_start"],
+                                             test=__opts__.get("test", False))
+                return True
 
     client = _get_client()
     config = client.config_get()

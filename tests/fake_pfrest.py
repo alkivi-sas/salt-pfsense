@@ -137,6 +137,9 @@ class FakePfrest:
                 return self._error(400, "FIELD_UNKNOWN", name)
             if model[name].get("readOnly"):
                 return self._error(400, "FIELD_READ_ONLY", name)
+        if method == "patch":
+            # PATCH is a partial update on top of the stored object
+            return None
         relaxed = CONDITIONAL_REQUIRED.get(path, set())
         missing = [name for name in spec.get("required", []) if name not in body and name not in relaxed]
         if missing:

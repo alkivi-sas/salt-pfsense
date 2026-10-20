@@ -17,6 +17,7 @@ import salt.utils.files
 import salt.utils.stringutils
 import pfsense
 import pfrest_module
+import pfsense_config_path
 import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
@@ -141,11 +142,15 @@ def _setup_dns(wanted_dns, wanted_gateways, route_to_delete):
             logging.warning("{0}".format(result))
 
     if _pfrest():
-        # system/dns is always applied (resolv.conf, resolver reload, filter)
-        if any(gateway for gateway in wanted_gateways):
-            raise CommandExecutionError('DNS server gateways are not covered by pfrest')
+        # system/dns is always applied (resolv.conf, resolver reload, filter); the per server
+        # gateways (dnsNgw) are not modelled and go through config_path, then resolv.conf again
+        test = __opts__.get('test', False)
         with pfrest_module.session(__salt__, __opts__, ha_sync=False) as api:
             api.patch('system/dns', {'dnsserver': wanted_dns})
+            for index, gateway in enumerate(wanted_gateways):
+                apply = ['system_resolvconf_generate'] if index == len(wanted_gateways) - 1 else []
+                pfsense_config_path.set_path(__salt__, 'system/dns{0}gw'.format(index + 1), gateway or '',
+                                             apply=apply, test=test)
         return True
 
     client = _get_client()

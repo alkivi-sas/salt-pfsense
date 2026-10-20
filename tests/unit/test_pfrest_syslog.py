@@ -3,7 +3,7 @@ from typing import Any, Callable
 import pytest
 from salt.exceptions import CommandExecutionError
 
-from conftest import Loader, PfrestEnv, bind
+from conftest import ConfigPath, Loader, PfrestEnv, bind
 from fake_pfrest import Collection
 
 # Key/value pairs used by the syslog SLS of the states repository
@@ -51,7 +51,19 @@ def test_sls_is_applied_then_idempotent(load_module: Loader, pfrest_env: Callabl
     assert module.force_reload() is True
 
 
-def test_unmodelled_setting_refused(load_module: Loader, pfrest_env: Callable[..., PfrestEnv]) -> None:
+def test_unmodelled_setting_uses_config_path(load_module: Loader, pfrest_env: Callable[..., PfrestEnv]) -> None:
+    env, module, _ = _setup(load_module, pfrest_env)
+    helper = ConfigPath({"syslog": {}})
+    module.__salt__["cmd.run_all"] = helper.run_all
+    assert module.get_setting("numberofitems") is False
+    module.set_setting("numberofitems", "50")
+    assert helper.config["syslog"]["numberofitems"] == "50"
+    assert helper.applied == ["system_syslogd_start"]
+    assert module.get_setting("numberofitems") == "50"
+
+
+def test_unknown_setting_refused(load_module: Loader, pfrest_env: Callable[..., PfrestEnv]) -> None:
     _, module, _ = _setup(load_module, pfrest_env)
-    with pytest.raises(CommandExecutionError, match="numberofitems"):
-        module.get_setting("numberofitems")
+    module.__salt__["cmd.run_all"] = ConfigPath({"syslog": {}}).run_all
+    with pytest.raises(CommandExecutionError, match="unknownkey"):
+        module.set_setting("unknownkey", "x")

@@ -16,6 +16,9 @@ import logging
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_module
+import pfsense_config_path
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -31,6 +34,16 @@ def __virtual__():
 
 def _get_client():
     return pfsense.FauxapiLib(debug=True)
+
+
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_sudo_configuration')
+
+
+def _config():
+    if _pfrest():
+        return pfsense_local.read_config()
+    return _get_client().config_get()
 
 def _check_interface(interface):
     client = _get_client()
@@ -48,8 +61,7 @@ def get_config():
 
     Return True or False
     '''
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     if 'installedpackages' not in config:
         raise CommandExecutionError('config is not valid : key {0} not found'.format('installedpackages'))
@@ -105,6 +117,13 @@ def set_value(name, value):
     .. code-block:: bash
         salt '*' pfsense_sudo_configuration.set_value userparams 'UserParameter=users,who | wc -l'
     '''
+
+    if _pfrest():
+        get_config()
+        with pfrest_module.session(__salt__, __opts__, ha_sync=False):
+            pfsense_config_path.set_path(__salt__, 'installedpackages/sudo/config/0/{0}'.format(name),
+                                         _encode_value(value, name), test=__opts__.get('test', False))
+        return True
 
     client = _get_client()
     config = client.config_get()

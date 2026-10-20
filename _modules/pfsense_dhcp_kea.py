@@ -32,6 +32,9 @@ import copy
 
 # Import Salt libs
 import pfsense
+import pfrest_dhcp_kea
+import pfrest_module
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -56,6 +59,10 @@ def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
 
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_dhcp_kea')
+
+
 def _get_context():
     try:
         return __context__  # noqa: F821 - provided by Salt at runtime
@@ -70,7 +77,7 @@ def _get_pending_config():
     """
     ctx = _get_context()
     if CONTEXT_PENDING not in ctx:
-        full_config = _get_client().config_get()
+        full_config = pfsense_local.read_config() if _pfrest() else _get_client().config_get()
         ctx[CONTEXT_ORIGINAL] = copy.deepcopy(full_config)
         ctx[CONTEXT_PENDING] = copy.deepcopy(full_config)
     return ctx[CONTEXT_PENDING]
@@ -306,6 +313,12 @@ def apply():
     ctx = _get_context()
     if ctx[CONTEXT_ORIGINAL] == ctx[CONTEXT_PENDING]:
         return False
+
+    if _pfrest():
+        with pfrest_module.session(__salt__, __opts__, 'dhcp') as api:
+            changed = pfrest_dhcp_kea.commit(api, __salt__, ctx[CONTEXT_ORIGINAL], ctx[CONTEXT_PENDING])
+        _clear_config_cache()
+        return changed
 
     client = _get_client()
     result = client.config_set(ctx[CONTEXT_PENDING])

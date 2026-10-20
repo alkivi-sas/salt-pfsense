@@ -16,6 +16,9 @@ import logging
 import salt.utils.files
 import salt.utils.stringutils
 import pfsense
+import pfrest_module
+import pfsense_config_path
+import pfsense_local
 from salt.exceptions import (
     CommandExecutionError,
     SaltInvocationError,
@@ -38,6 +41,16 @@ def _get_client():
     return pfsense.FauxapiLib(debug=True)
 
 
+def _pfrest():
+    return pfrest_module.enabled(__salt__, 'pfsense_sshguard_whitelist')
+
+
+def _config():
+    if _pfrest():
+        return pfsense_local.read_config()
+    return _get_client().config_get()
+
+
 def _check_ip(ip):
     interface = IPv4Interface(ip)
     real_ip = interface.network.network_address._explode_shorthand_ip_string()
@@ -52,8 +65,7 @@ def list_ips():
     .. code-block:: bash
         salt '*' pfsense_sshguard_whitelist.list_ips
     '''
-    client = _get_client()
-    config = client.config_get()
+    config = _config()
 
     if 'sshguard_whitelist' not in config['system']:
         return []
@@ -93,6 +105,13 @@ def add_ip(ip):
 
     current_ips.append(ip)
 
+    if _pfrest():
+        # Same apply as helpers/sshguard_whitelist.php
+        with pfrest_module.session(__salt__, __opts__, ha_sync=False):
+            pfsense_config_path.set_path(__salt__, 'system/sshguard_whitelist', ' '.join(current_ips),
+                                         apply=['filter_configure', 'system_syslogd_start'], test=__opts__.get('test', False))
+        return True
+
     client = _get_client()
     config = client.config_get()
 
@@ -126,6 +145,13 @@ def rm_ip(ip):
 
     current_ips = list_ips()
     if ip not in current_ips:
+        return True
+
+    if _pfrest():
+        remaining = ' '.join(i for i in current_ips if i != ip)
+        with pfrest_module.session(__salt__, __opts__, ha_sync=False):
+            pfsense_config_path.set_path(__salt__, 'system/sshguard_whitelist', remaining,
+                                         apply=['filter_configure', 'system_syslogd_start'], test=__opts__.get('test', False))
         return True
 
     client = _get_client()

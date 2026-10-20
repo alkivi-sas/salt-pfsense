@@ -41,10 +41,14 @@ def _config(**lan: Any) -> dict[str, Any]:
 class Kea:
     def __init__(self, load_module: Loader, client: FakeFauxapi, monkeypatch: pytest.MonkeyPatch) -> None:
         self.ha_sync: list[list[str]] = []
-        salt = {
-            "config.get": lambda key, default: OPTIONS,
-            "cmd.run_all": lambda cmd, python_shell=False: self.ha_sync.append(cmd),
-        }
+
+        def config_get(key: str, default: Any) -> Any:
+            return OPTIONS if key == "pfsense:dhcp_kea:options" else default
+
+        def run_all(cmd: list[str], python_shell: bool = False) -> None:
+            self.ha_sync.append(cmd)
+
+        salt = {"config.get": config_get, "cmd.run_all": run_all}
         self.module = load_module("_modules/pfsense_dhcp_kea.py", __salt__=salt)
         self.client = client
         monkeypatch.setattr(self.module, "_get_client", lambda: client)

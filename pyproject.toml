@@ -11,7 +11,7 @@ addopts = "-m 'not lab'"
 
 [tool.mypy]
 python_version = "3.13"
-files = ["tests", "_utils/pfrest*.py", "_utils/pfsense_local.py", "pfrest"]
+files = ["tests", "_utils/pfrest*.py", "_utils/pfsense_local.py", "_utils/pfsense_config_path.py", "pfrest"]
 ignore_missing_imports = true
 check_untyped_defs = true
 

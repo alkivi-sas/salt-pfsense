@@ -1,6 +1,8 @@
 import copy
 import importlib.util
 import itertools
+import json
+import re
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -139,3 +141,47 @@ def pfrest_env(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Callable[...,
         return PfrestEnv(server, apply_mode, {k.replace("__", ":"): v for k, v in pillar.items()})
 
     return make
+
+
+CONFIG_PATH_HELPER = "/opt/helpers/config_path.php"
+# Same allowlist as the PHP helper, read from it so both stay in sync
+CONFIG_PATH_ALLOWED = [
+    re.compile(pattern) for pattern in re.findall(r"'#(\^[^#]+)#'", (ROOT / "helpers" / "config_path.php").read_text())
+]
+
+
+class ConfigPath:
+    """Emulates config_path.php on an in-memory config.xml, recording the apply actions."""
+
+    def __init__(self, config: dict[str, Any]) -> None:
+        self.config = config
+        self.applied: list[str] = []
+        self.commands: list[list[str]] = []
+
+    def node(self, path: str) -> tuple[Any, str]:
+        parent: Any = self.config
+        keys = path.split("/")
+        for key in keys[:-1]:
+            parent = parent[int(key)] if isinstance(parent, list) else parent.setdefault(key, {})
+        return parent, keys[-1]
+
+    def run_all(self, cmd: list[str], stdin: str = "", **kwargs: Any) -> dict[str, Any]:
+        if cmd != ["php", CONFIG_PATH_HELPER]:
+            self.commands.append(cmd)
+            return {"retcode": 0, "stdout": "", "stderr": ""}
+        request = json.loads(stdin)
+        if not any(pattern.match(request["path"]) for pattern in CONFIG_PATH_ALLOWED):
+            return {"retcode": 1, "stdout": "", "stderr": "path {0} is not allowed".format(request["path"])}
+        parent, key = self.node(request["path"])
+        current = parent.get(key)
+        if request["op"] == "get":
+            return {"retcode": 0, "stdout": json.dumps({"value": current}), "stderr": ""}
+        if request["op"] == "set":
+            changed = current != request["value"]
+            parent[key] = request["value"]
+        else:
+            changed = key in parent
+            parent.pop(key, None)
+        if changed:
+            self.applied.extend(request.get("apply", []))
+        return {"retcode": 0, "stdout": json.dumps({"changed": changed}), "stderr": ""}
