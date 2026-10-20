@@ -2,8 +2,6 @@
 
 Chaque recette suit le même format en neuf sections. Les fichiers cités dans `examples/` sont les vrais fichiers utilisés ; `tests/test_recipes.py` vérifie la structure des recettes, l'existence des fichiers cités, le rendu des SLS d'exemple et l'existence des fonctions qu'ils appellent.
 
-Les commandes `state.apply pfsense.<sujet>` supposent que les SLS de `examples/salt/` sont posés sous `pfsense/` du dépôt de states ; adapter le nom au rangement réel.
-
 | Recette | Sujet |
 |---|---|
 | [00-architecture.md](00-architecture.md) | Architecture et prérequis |
@@ -39,3 +37,4 @@ Les commandes `state.apply pfsense.<sujet>` supposent que les SLS de `examples/s
 | [43-pfrest-upgrade.md](43-pfrest-upgrade.md) | Monter la version de pfrest |
 | [44-rollback.md](44-rollback.md) | Retour arrière |
 | [45-troubleshooting.md](45-troubleshooting.md) | Dépannage |
+| [46-fauxapi-removal.md](46-fauxapi-removal.md) | Désinstaller FauxAPI |

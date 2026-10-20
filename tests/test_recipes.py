@@ -45,7 +45,8 @@ def test_recipe_structure(recipe: Path) -> None:
 def _render(path: Path) -> dict[str, Any]:
     salt = {"pillar.get": lambda key, default=None: default}
     environment = jinja2.Environment(undefined=jinja2.StrictUndefined)
-    data = yaml.safe_load(environment.from_string(path.read_text()).render(salt=salt, pillar={}, grains={}))
+    # An SLS may render nothing when its guard is false (e.g. fauxapi_absent.sls)
+    data = yaml.safe_load(environment.from_string(path.read_text()).render(salt=salt, pillar={}, grains={})) or {}
     assert isinstance(data, dict), path
     return data
 
@@ -73,3 +74,15 @@ def test_example_sls(example: Path) -> None:
 def test_example_pillar_is_yaml() -> None:
     data = yaml.safe_load((ROOT / "examples" / "pillar" / "pfsense.sls").read_text())
     assert set(data["pfsense"]) >= {"api_backend", "restapi", "pfrest", "pki", "dhcp_kea"}
+
+
+@pytest.mark.parametrize(
+    "overrides, states",
+    [({}, {"fauxapi-package", "/etc/fauxapi"}), ({"pfsense_alias": "fauxapi"}, set())],
+)
+def test_fauxapi_removal_guard(overrides: dict[str, str], states: set[str]) -> None:
+    pillar = {"pfsense:api_backend": "pfrest", "pfsense:api_backend_overrides": overrides}
+    salt = {"pillar.get": lambda key, default=None: pillar.get(key, default)}
+    template = (ROOT / "examples" / "salt" / "fauxapi_absent.sls").read_text()
+    data = yaml.safe_load(jinja2.Environment().from_string(template).render(salt=salt)) or {}
+    assert set(data) == states
