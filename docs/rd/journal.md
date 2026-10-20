@@ -151,3 +151,13 @@ Une entrée par séance de travail : date, lot et tâche, verrous concernés, ce
   - structure des recettes et existence des fichiers cités ;
   - rendu Jinja/YAML de chaque SLS ;
   - existence de chaque fonction de state ou de module appelée.
+
+## 2026-10-20 — Lot 7 : plan de déploiement
+
+- **Plan exécutable** (`docs/migration/rollout.md`), non exécuté faute de fenêtre et de lab :
+  - un pilote à exposition minimale ;
+  - trois vagues (37 amd64, 100 arm64, 4 paires HA) ;
+  - les cas armv7 (6) et les mises à jour pfSense préalables (7) ;
+  - la migration Kea en trois étapes ;
+  - les critères de passage et les indicateurs.
+- **Défaut corrigé en préparation :** le state interface réécrivait chaque passage, ce qui aurait déclenché un apply à chaque run sur pfrest.
