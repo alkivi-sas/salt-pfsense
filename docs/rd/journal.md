@@ -145,7 +145,7 @@ Une entrée par séance de travail : date, lot et tâche, verrous concernés, ce
 
 ## 2026-10-20 — Lot 6 : recettes de déploiement Salt
 
-- **33 recettes au même format** (9 sections) : 8 socle, 19 par domaine, 6 d’xploitation.
+- **33 recettes au même format** (9 sections) : 8 socle, 19 par domaine, 6 d’exploitation.
 - **Exemples réels** dans `examples/` : un pillar et 22 SLS.
 - **Validation hors ligne**, à défaut de lab (T6.5) :
   - structure des recettes et existence des fichiers cités ;
