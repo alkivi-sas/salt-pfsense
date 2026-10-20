@@ -9,6 +9,7 @@ after writing (write_checked). See docs/migration/plan.md (lot 2) and docs/rd/03
 import contextlib
 import fcntl
 import logging
+import re
 from typing import Any, Callable, Iterator
 
 import requests
@@ -131,6 +132,23 @@ class PfrestClient:
         self.writes += 1
         self._own_write()
         return data
+
+    def download(self, endpoint: str, body: dict[str, Any]) -> tuple[str | None, bytes]:
+        """POST an action returning a file (binary content); return (filename, content)."""
+        headers = {"X-API-Key": self._api_key, "Accept": "application/octet-stream"}
+        response = self.session.request(
+            "POST", self.base_url + endpoint, json=body, headers=headers, verify=self.verify, timeout=TIMEOUT
+        )
+        if response.status_code >= 400:
+            try:
+                payload = response.json()
+            except ValueError:
+                payload = {}
+            raise PfrestError(
+                response.status_code, payload.get("response_id", "UNKNOWN"), payload.get("message", "download failed")
+            )
+        match = re.search(r'filename="?([^";]+)"?', response.headers.get("Content-Disposition", ""))
+        return (match.group(1) if match else None), response.content
 
     # apply (V3)
     # =========================================================================

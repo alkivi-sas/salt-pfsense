@@ -36,6 +36,8 @@ CONDITIONAL_REQUIRED = {
 class Response:
     status_code: int
     payload: dict[str, Any]
+    content: bytes = b""
+    headers: dict[str, str] = field(default_factory=dict)
 
     def json(self) -> dict[str, Any]:
         return self.payload
@@ -93,7 +95,14 @@ class FakePfrest:
             return self._ok(copy.deepcopy(self.revisions))
         if path in self.hooks and method == "POST":
             error = self._validate(path, "post", body)
-            return error or self._ok(self.hooks[path](self, body))
+            if error:
+                return error
+            result = self.hooks[path](self, body)
+            if isinstance(result, tuple):
+                filename, content = result
+                disposition = 'attachment; filename="{0}"'.format(filename)
+                return Response(200, {}, content, {"Content-Disposition": disposition})
+            return self._ok(result)
         if path.endswith("/apply"):
             if method == "POST":
                 self.applied.append(path)
