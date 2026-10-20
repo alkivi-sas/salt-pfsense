@@ -13,7 +13,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 CONTRACT = json.loads((Path(__file__).parent.parent / "pfrest" / "contract" / "v2.10.2.json").read_text())
-CONTROL = {"apply", "async", "dry_run", "id", "parent_id"}
+CONTROL = {"apply", "async", "dry_run", "id", "parent_id", "placement"}
 QUERY_CONTROL = {"limit", "offset", "sort_by", "sort_order", "sort_flags", "query"}
 
 
@@ -141,12 +141,14 @@ class FakePfrest:
             return self._ok(copy.deepcopy(self.data[collection.singular]))
         parent_id = body.pop("parent_id", None)
         store = self.objects(collection.singular, parent_id) if collection.parented else self.data[collection.singular]
+        placement = body.pop("placement", None)
         if method == "POST":
             obj = body
+            index = len(store) if placement is None else min(int(placement), len(store))
             if not dry_run:
-                store.append(obj)
+                store.insert(index, obj)
                 self.external_write("api")
-            return self._ok(dict(obj, id=len(store) - 1))
+            return self._ok(dict(obj, id=index))
         index = int(body.pop("id"))
         if index >= len(store):
             return self._error(404, "MODEL_OBJECT_NOT_FOUND", str(index))
