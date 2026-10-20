@@ -22,7 +22,11 @@ HA_SYNC = ["/etc/rc.filter_synchronize"]
 
 
 def enabled(salt: Any, module: str) -> bool:
-    return pfsense.get_backend(salt["config.get"], module) == "pfrest"
+    config_get = salt.get("config.get")
+    if config_get is None:
+        # Not loaded by Salt (direct import): stay on the default backend
+        return False
+    return pfsense.get_backend(config_get, module) == "pfrest"
 
 
 @functools.lru_cache(maxsize=1)
