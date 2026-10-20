@@ -1,0 +1,6678 @@
+{
+ "endpoints": {
+  "auth/key": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "RESTAPIKey",
+    "parameters": [],
+    "required": []
+   }
+  },
+  "auth/keys": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "diagnostics/config_history/revision": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   }
+  },
+  "diagnostics/config_history/revisions": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "firewall/alias": {
+   "delete": {
+    "parameters": [
+     "apply",
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "FirewallAlias",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "FirewallAlias",
+    "parameters": [],
+    "required": [
+     "name",
+     "type"
+    ]
+   }
+  },
+  "firewall/aliases": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   },
+   "put": {
+    "model": null,
+    "parameters": [],
+    "required": []
+   }
+  },
+  "firewall/apply": {
+   "get": {
+    "parameters": []
+   },
+   "post": {
+    "model": "FirewallApply",
+    "parameters": [],
+    "required": []
+   }
+  },
+  "firewall/nat/port_forward": {
+   "delete": {
+    "parameters": [
+     "apply",
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "PortForward",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "PortForward",
+    "parameters": [],
+    "required": [
+     "destination",
+     "interface",
+     "local_port",
+     "protocol",
+     "source",
+     "target"
+    ]
+   }
+  },
+  "firewall/nat/port_forwards": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   },
+   "put": {
+    "model": null,
+    "parameters": [],
+    "required": []
+   }
+  },
+  "firewall/rule": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "FirewallRule",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "FirewallRule",
+    "parameters": [],
+    "required": [
+     "destination",
+     "interface",
+     "ipprotocol",
+     "source",
+     "type"
+    ]
+   }
+  },
+  "firewall/rules": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   },
+   "put": {
+    "model": null,
+    "parameters": [],
+    "required": []
+   }
+  },
+  "interface": {
+   "delete": {
+    "parameters": [
+     "apply",
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "NetworkInterface",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "NetworkInterface",
+    "parameters": [],
+    "required": [
+     "descr",
+     "gateway_6rd",
+     "if",
+     "ipaddr",
+     "ipaddrv6",
+     "prefix_6rd",
+     "prefix_6rd_v4plen",
+     "subnet",
+     "subnetv6",
+     "track6_interface",
+     "typev4"
+    ]
+   }
+  },
+  "interface/apply": {
+   "get": {
+    "parameters": []
+   },
+   "post": {
+    "model": "InterfaceApply",
+    "parameters": [],
+    "required": []
+   }
+  },
+  "interface/available_interfaces": {
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "interface/bridge": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "InterfaceBridge",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "InterfaceBridge",
+    "parameters": [],
+    "required": [
+     "members"
+    ]
+   }
+  },
+  "interface/bridges": {
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "interface/gre": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "InterfaceGRE",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "InterfaceGRE",
+    "parameters": [],
+    "required": [
+     "if",
+     "remote_addr",
+     "tunnel_remote_addr",
+     "tunnel_remote_addr6"
+    ]
+   }
+  },
+  "interface/gres": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "interface/group": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "InterfaceGroup",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "InterfaceGroup",
+    "parameters": [],
+    "required": [
+     "ifname"
+    ]
+   }
+  },
+  "interface/groups": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   },
+   "put": {
+    "model": null,
+    "parameters": [],
+    "required": []
+   }
+  },
+  "interface/lagg": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "InterfaceLAGG",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "InterfaceLAGG",
+    "parameters": [],
+    "required": [
+     "members",
+     "proto"
+    ]
+   }
+  },
+  "interface/laggs": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "interface/vlan": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "InterfaceVLAN",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "InterfaceVLAN",
+    "parameters": [],
+    "required": [
+     "if",
+     "tag"
+    ]
+   }
+  },
+  "interface/vlans": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "interfaces": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "routing/apply": {
+   "get": {
+    "parameters": []
+   },
+   "post": {
+    "model": "RoutingApply",
+    "parameters": [],
+    "required": []
+   }
+  },
+  "routing/gateway": {
+   "delete": {
+    "parameters": [
+     "apply",
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "RoutingGateway",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "RoutingGateway",
+    "parameters": [],
+    "required": [
+     "gateway",
+     "interface",
+     "ipprotocol",
+     "name"
+    ]
+   }
+  },
+  "routing/gateway/default": {
+   "get": {
+    "parameters": []
+   },
+   "patch": {
+    "model": "DefaultGateway",
+    "parameters": [],
+    "required": []
+   }
+  },
+  "routing/gateway/group": {
+   "delete": {
+    "parameters": [
+     "apply",
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "RoutingGatewayGroup",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "RoutingGatewayGroup",
+    "parameters": [],
+    "required": [
+     "name",
+     "priorities"
+    ]
+   }
+  },
+  "routing/gateway/group/priorities": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "routing/gateway/group/priority": {
+   "delete": {
+    "parameters": [
+     "apply",
+     "id",
+     "parent_id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "patch": {
+    "model": "RoutingGatewayGroupPriority",
+    "parameters": [],
+    "required": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "post": {
+    "model": "RoutingGatewayGroupPriority",
+    "parameters": [],
+    "required": [
+     "gateway",
+     "parent_id",
+     "tier"
+    ]
+   }
+  },
+  "routing/gateway/groups": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "routing/gateways": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "services/cron/job": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "CronJob",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "CronJob",
+    "parameters": [],
+    "required": [
+     "command",
+     "hour",
+     "mday",
+     "minute",
+     "month",
+     "wday",
+     "who"
+    ]
+   }
+  },
+  "services/cron/jobs": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   },
+   "put": {
+    "model": null,
+    "parameters": [],
+    "required": []
+   }
+  },
+  "services/dhcp_server": {
+   "delete": {
+    "parameters": [
+     "apply",
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "DHCPServer",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "DHCPServer",
+    "parameters": [],
+    "required": [
+     "interface"
+    ]
+   }
+  },
+  "services/dhcp_server/address_pool": {
+   "delete": {
+    "parameters": [
+     "apply",
+     "id",
+     "parent_id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "patch": {
+    "model": "DHCPServerAddressPool",
+    "parameters": [],
+    "required": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "post": {
+    "model": "DHCPServerAddressPool",
+    "parameters": [],
+    "required": [
+     "parent_id",
+     "range_from",
+     "range_to"
+    ]
+   }
+  },
+  "services/dhcp_server/address_pools": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "services/dhcp_server/apply": {
+   "get": {
+    "parameters": []
+   },
+   "post": {
+    "model": "DHCPServerApply",
+    "parameters": [],
+    "required": []
+   }
+  },
+  "services/dhcp_server/backend": {
+   "patch": {
+    "model": "DHCPServerBackend",
+    "parameters": [],
+    "required": []
+   }
+  },
+  "services/dhcp_server/custom_option": {
+   "delete": {
+    "parameters": [
+     "apply",
+     "id",
+     "parent_id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "patch": {
+    "model": "DHCPServerCustomOption",
+    "parameters": [],
+    "required": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "post": {
+    "model": "DHCPServerCustomOption",
+    "parameters": [],
+    "required": [
+     "number",
+     "parent_id",
+     "type",
+     "value"
+    ]
+   }
+  },
+  "services/dhcp_server/custom_options": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "services/dhcp_server/static_mapping": {
+   "delete": {
+    "parameters": [
+     "apply",
+     "id",
+     "parent_id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "patch": {
+    "model": "DHCPServerStaticMapping",
+    "parameters": [],
+    "required": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "post": {
+    "model": "DHCPServerStaticMapping",
+    "parameters": [],
+    "required": [
+     "mac",
+     "parent_id"
+    ]
+   }
+  },
+  "services/dhcp_server/static_mappings": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "services/dhcp_servers": {
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   },
+   "put": {
+    "model": null,
+    "parameters": [],
+    "required": []
+   }
+  },
+  "services/ssh": {
+   "get": {
+    "parameters": []
+   },
+   "patch": {
+    "model": "SSH",
+    "parameters": [],
+    "required": []
+   }
+  },
+  "status/gateways": {
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "status/logs/settings": {
+   "get": {
+    "parameters": []
+   },
+   "patch": {
+    "model": "LogSettings",
+    "parameters": [],
+    "required": []
+   }
+  },
+  "system/certificate": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "Certificate",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "Certificate",
+    "parameters": [],
+    "required": [
+     "crt",
+     "descr",
+     "prv"
+    ]
+   }
+  },
+  "system/certificate/generate": {
+   "post": {
+    "model": "CertificateGenerate",
+    "parameters": [],
+    "required": [
+     "caref",
+     "descr",
+     "digest_alg",
+     "dn_commonname",
+     "ecname",
+     "keylen",
+     "keytype"
+    ]
+   }
+  },
+  "system/certificate/pkcs12/export": {
+   "post": {
+    "model": "CertificatePKCS12Export",
+    "parameters": [],
+    "required": [
+     "certref"
+    ]
+   }
+  },
+  "system/certificate/renew": {
+   "post": {
+    "model": "CertificateRenew",
+    "parameters": [],
+    "required": [
+     "certref"
+    ]
+   }
+  },
+  "system/certificate/signing_request": {
+   "post": {
+    "model": "CertificateSigningRequest",
+    "parameters": [],
+    "required": [
+     "descr",
+     "digest_alg",
+     "dn_commonname",
+     "ecname",
+     "keylen",
+     "keytype"
+    ]
+   }
+  },
+  "system/certificate/signing_request/sign": {
+   "post": {
+    "model": "CertificateSigningRequestSign",
+    "parameters": [],
+    "required": [
+     "caref",
+     "csr",
+     "descr",
+     "digest_alg"
+    ]
+   }
+  },
+  "system/certificate_authorities": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "system/certificate_authority": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "CertificateAuthority",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "CertificateAuthority",
+    "parameters": [],
+    "required": [
+     "crt",
+     "descr"
+    ]
+   }
+  },
+  "system/certificate_authority/generate": {
+   "post": {
+    "model": "CertificateAuthorityGenerate",
+    "parameters": [],
+    "required": [
+     "caref",
+     "descr",
+     "digest_alg",
+     "ecname",
+     "keylen",
+     "keytype"
+    ]
+   }
+  },
+  "system/certificate_authority/renew": {
+   "post": {
+    "model": "CertificateAuthorityRenew",
+    "parameters": [],
+    "required": [
+     "caref"
+    ]
+   }
+  },
+  "system/certificates": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "system/crl": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "CertificateRevocationList",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "CertificateRevocationList",
+    "parameters": [],
+    "required": [
+     "caref",
+     "descr",
+     "method",
+     "text"
+    ]
+   }
+  },
+  "system/crl/revoked_certificate": {
+   "delete": {
+    "parameters": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "patch": {
+    "model": "CertificateRevocationListRevokedCertificate",
+    "parameters": [],
+    "required": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "post": {
+    "model": "CertificateRevocationListRevokedCertificate",
+    "parameters": [],
+    "required": [
+     "certref",
+     "parent_id",
+     "revoke_time"
+    ]
+   }
+  },
+  "system/crls": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "system/dns": {
+   "get": {
+    "parameters": []
+   },
+   "patch": {
+    "model": "SystemDNS",
+    "parameters": [],
+    "required": []
+   }
+  },
+  "system/hostname": {
+   "get": {
+    "parameters": []
+   },
+   "patch": {
+    "model": "SystemHostname",
+    "parameters": [],
+    "required": [
+     "domain",
+     "hostname"
+    ]
+   }
+  },
+  "system/package": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "Package",
+    "parameters": [],
+    "required": [
+     "name"
+    ]
+   }
+  },
+  "system/package/available": {
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "system/packages": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "system/restapi/access_list": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   },
+   "put": {
+    "model": null,
+    "parameters": [],
+    "required": []
+   }
+  },
+  "system/restapi/access_list/entry": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "RESTAPIAccessListEntry",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "RESTAPIAccessListEntry",
+    "parameters": [],
+    "required": [
+     "network"
+    ]
+   }
+  },
+  "system/restapi/settings": {
+   "get": {
+    "parameters": []
+   },
+   "patch": {
+    "model": "RESTAPISettings",
+    "parameters": [],
+    "required": []
+   }
+  },
+  "system/restapi/settings/sync": {
+   "post": {
+    "model": "RESTAPISettingsSync",
+    "parameters": [],
+    "required": [
+     "sync_data"
+    ]
+   }
+  },
+  "system/restapi/version": {
+   "get": {
+    "parameters": []
+   },
+   "patch": {
+    "model": "RESTAPIVersion",
+    "parameters": [],
+    "required": []
+   }
+  },
+  "system/version": {
+   "get": {
+    "parameters": []
+   }
+  },
+  "system/webgui/settings": {
+   "get": {
+    "parameters": []
+   },
+   "patch": {
+    "model": "WebGUISettings",
+    "parameters": [],
+    "required": [
+     "sslcertref"
+    ]
+   }
+  },
+  "user": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "User",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "User",
+    "parameters": [],
+    "required": [
+     "name",
+     "password"
+    ]
+   }
+  },
+  "user/auth_server": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "AuthServer",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "AuthServer",
+    "parameters": [],
+    "required": [
+     "host",
+     "ldap_bindpw",
+     "ldap_port",
+     "ldap_scope",
+     "ldap_urltype",
+     "name",
+     "radius_nasip_attribute",
+     "radius_secret",
+     "type"
+    ]
+   }
+  },
+  "user/auth_servers": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   },
+   "put": {
+    "model": null,
+    "parameters": [],
+    "required": []
+   }
+  },
+  "user/group": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "UserGroup",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "UserGroup",
+    "parameters": [],
+    "required": [
+     "name"
+    ]
+   }
+  },
+  "user/groups": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   },
+   "put": {
+    "model": null,
+    "parameters": [],
+    "required": []
+   }
+  },
+  "users": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "vpn/openvpn/client_export": {
+   "post": {
+    "model": "OpenVPNClientExport",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   }
+  },
+  "vpn/openvpn/client_export/config": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "OpenVPNClientExportConfig",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "OpenVPNClientExportConfig",
+    "parameters": [],
+    "required": [
+     "pass",
+     "pkcs11id",
+     "pkcs11providers",
+     "proxyaddr",
+     "proxypass",
+     "proxyport",
+     "proxyuser",
+     "server",
+     "useproxypass"
+    ]
+   }
+  },
+  "vpn/openvpn/client_export/configs": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   },
+   "put": {
+    "model": null,
+    "parameters": [],
+    "required": []
+   }
+  },
+  "vpn/openvpn/server": {
+   "delete": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "OpenVPNServer",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "OpenVPNServer",
+    "parameters": [],
+    "required": [
+     "caref",
+     "certref",
+     "data_ciphers",
+     "data_ciphers_fallback",
+     "dev_mode",
+     "dh_length",
+     "digest",
+     "ecdh_curve",
+     "interface",
+     "mode",
+     "protocol",
+     "serverbridge_dhcp_end",
+     "serverbridge_dhcp_start",
+     "serverbridge_interface",
+     "tls_type"
+    ]
+   }
+  },
+  "vpn/openvpn/servers": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "vpn/wireguard/apply": {
+   "get": {
+    "parameters": []
+   },
+   "post": {
+    "model": "WireGuardApply",
+    "parameters": [],
+    "required": []
+   }
+  },
+  "vpn/wireguard/peer": {
+   "delete": {
+    "parameters": [
+     "apply",
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "WireGuardPeer",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "WireGuardPeer",
+    "parameters": [],
+    "required": [
+     "publickey"
+    ]
+   }
+  },
+  "vpn/wireguard/peer/allowed_ip": {
+   "delete": {
+    "parameters": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "patch": {
+    "model": "WireGuardPeerAllowedIP",
+    "parameters": [],
+    "required": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "post": {
+    "model": "WireGuardPeerAllowedIP",
+    "parameters": [],
+    "required": [
+     "address",
+     "mask",
+     "parent_id"
+    ]
+   }
+  },
+  "vpn/wireguard/peer/allowed_ips": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "vpn/wireguard/peers": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   },
+   "put": {
+    "model": null,
+    "parameters": [],
+    "required": []
+   }
+  },
+  "vpn/wireguard/settings": {
+   "get": {
+    "parameters": []
+   },
+   "patch": {
+    "model": "WireGuardSettings",
+    "parameters": [],
+    "required": []
+   }
+  },
+  "vpn/wireguard/tunnel": {
+   "delete": {
+    "parameters": [
+     "apply",
+     "id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id"
+    ]
+   },
+   "patch": {
+    "model": "WireGuardTunnel",
+    "parameters": [],
+    "required": [
+     "id"
+    ]
+   },
+   "post": {
+    "model": "WireGuardTunnel",
+    "parameters": [],
+    "required": [
+     "privatekey"
+    ]
+   }
+  },
+  "vpn/wireguard/tunnel/address": {
+   "delete": {
+    "parameters": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "patch": {
+    "model": "WireGuardTunnelAddress",
+    "parameters": [],
+    "required": [
+     "id",
+     "parent_id"
+    ]
+   },
+   "post": {
+    "model": "WireGuardTunnelAddress",
+    "parameters": [],
+    "required": [
+     "address",
+     "mask",
+     "parent_id"
+    ]
+   }
+  },
+  "vpn/wireguard/tunnel/addresses": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   }
+  },
+  "vpn/wireguard/tunnels": {
+   "delete": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query"
+    ]
+   },
+   "get": {
+    "parameters": [
+     "limit",
+     "offset",
+     "query",
+     "sort_by",
+     "sort_flags",
+     "sort_order"
+    ]
+   },
+   "put": {
+    "model": null,
+    "parameters": [],
+    "required": []
+   }
+  }
+ },
+ "models": {
+  "AuthServer": {
+   "host": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ldap_allow_unauthenticated": {
+    "default": true,
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ldap_attr_group": {
+    "default": "cn",
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ldap_attr_groupobj": {
+    "default": "posixGroup",
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ldap_attr_member": {
+    "default": "member",
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ldap_attr_user": {
+    "default": "cn",
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ldap_authcn": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ldap_basedn": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ldap_binddn": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ldap_bindpw": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ldap_caref": {
+    "default": "global",
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ldap_extended_enabled": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ldap_extended_query": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ldap_nostrip_at": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ldap_pam_groupdn": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ldap_port": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ldap_protver": {
+    "default": 3,
+    "enum": [
+     2,
+     3
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "ldap_rfc2307": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ldap_rfc2307_userdn": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ldap_scope": {
+    "enum": [
+     "one",
+     "subtree"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ldap_timeout": {
+    "default": 25,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "ldap_urltype": {
+    "enum": [
+     "Standard TCP",
+     "STARTTLS Encrypt",
+     "SSL/TLS Encrypted"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ldap_utf8": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "name": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "radius_acct_port": {
+    "default": "1813",
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "radius_auth_port": {
+    "default": "1812",
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "radius_nasip_attribute": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "radius_protocol": {
+    "default": "MSCHAPv2",
+    "enum": [
+     "MSCHAPv2",
+     "MSCHAPv1",
+     "CHAP_MD5",
+     "PAP"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "radius_secret": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "radius_timeout": {
+    "default": 5,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "refid": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "type": {
+    "enum": [
+     "ldap",
+     "radius"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "Certificate": {
+   "caref": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "crt": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "csr": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "prv": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "refid": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "type": {
+    "default": "server",
+    "enum": [
+     "server",
+     "user"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "valid_days_left": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "valid_from": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "valid_until": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "CertificateAuthority": {
+   "caref": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "crt": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "prv": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "randomserial": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "refid": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "serial": {
+    "default": 1,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "trust": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   }
+  },
+  "CertificateAuthorityGenerate": {
+   "caref": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "crt": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "digest_alg": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_city": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_commonname": {
+    "default": "internal-ca",
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_country": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_organization": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_organizationalunit": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_state": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ecname": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "is_intermediate": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "keylen": {
+    "enum": [
+     1024,
+     2048,
+     3072,
+     4096,
+     6144,
+     7680,
+     8192,
+     15360,
+     16384
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "keytype": {
+    "enum": [
+     "RSA",
+     "ECDSA"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "lifetime": {
+    "default": 3650,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "prv": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "randomserial": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "refid": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "serial": {
+    "default": 1,
+    "nullable": true,
+    "readOnly": true,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "trust": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   }
+  },
+  "CertificateAuthorityRenew": {
+   "caref": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "newserial": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "oldserial": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "reusekey": {
+    "default": true,
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "reuseserial": {
+    "default": true,
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "strictsecurity": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   }
+  },
+  "CertificateGenerate": {
+   "caref": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "crt": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "digest_alg": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_city": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_commonname": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_country": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_dns_sans": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "dn_email_sans": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "dn_ip_sans": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "dn_organization": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_organizationalunit": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_state": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_uri_sans": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "ecname": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "keylen": {
+    "enum": [
+     1024,
+     2048,
+     3072,
+     4096,
+     6144,
+     7680,
+     8192,
+     15360,
+     16384
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "keytype": {
+    "enum": [
+     "RSA",
+     "ECDSA"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "lifetime": {
+    "default": 3650,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "prv": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "refid": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "type": {
+    "default": "user",
+    "enum": [
+     "server",
+     "user"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "CertificatePKCS12Export": {
+   "binary_data": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "certref": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "encryption": {
+    "default": "high",
+    "enum": [
+     "high",
+     "low",
+     "legacy"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "filename": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "passphrase": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "CertificateRenew": {
+   "certref": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "newserial": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "oldserial": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "reusekey": {
+    "default": true,
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "reuseserial": {
+    "default": true,
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "strictsecurity": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   }
+  },
+  "CertificateRevocationList": {
+   "caref": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "cert": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "lifetime": {
+    "default": 730,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "method": {
+    "enum": [
+     "existing",
+     "internal"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "refid": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "serial": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "text": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "CertificateRevocationListRevokedCertificate": {
+   "caref": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": true
+   },
+   "certref": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "crt": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": true
+   },
+   "descr": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": true
+   },
+   "prv": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": true
+   },
+   "reason": {
+    "enum": [
+     -1,
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     9
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "revoke_time": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "serial": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "type": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": true
+   }
+  },
+  "CertificateSigningRequest": {
+   "csr": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "digest_alg": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_city": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_commonname": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_country": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_dns_sans": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "dn_email_sans": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "dn_ip_sans": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "dn_organization": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_organizationalunit": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_state": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_uri_sans": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "ecname": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "keylen": {
+    "enum": [
+     1024,
+     2048,
+     3072,
+     4096,
+     6144,
+     7680,
+     8192,
+     15360,
+     16384
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "keytype": {
+    "enum": [
+     "RSA",
+     "ECDSA"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "lifetime": {
+    "default": 3650,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "prv": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "refid": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "type": {
+    "default": "user",
+    "enum": [
+     "server",
+     "user"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "CertificateSigningRequestSign": {
+   "caref": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "crt": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "csr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "digest_alg": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dn_dns_sans": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "dn_email_sans": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "dn_ip_sans": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "dn_uri_sans": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "lifetime": {
+    "default": 3650,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "prv": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "refid": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "type": {
+    "default": "user",
+    "enum": [
+     "server",
+     "user"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "CronJob": {
+   "command": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "hour": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "mday": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "minute": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "month": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "wday": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "who": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "DHCPServer": {
+   "defaultleasetime": {
+    "default": 7200,
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "denyunknown": {
+    "enum": [
+     "enabled",
+     "class"
+    ],
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dhcpleaseinlocaltime": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "disablepingcheck": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "dnsserver": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "domain": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "domainsearchlist": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "enable": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "failover_peerip": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "filename": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "filename32": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "filename32arm": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "filename64": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "filename64arm": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "gateway": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ignorebootp": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ignoreclientuids": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "interface": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "mac_allow": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "mac_deny": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "maxleasetime": {
+    "default": 86400,
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "netboot": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "nextserver": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "nonak": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ntpserver": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "numberoptions": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "pool": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "range_from": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "range_to": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "rootpath": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "staticarp": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "staticmap": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "statsgraph": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "uefihttpboot": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "winsserver": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   }
+  },
+  "DHCPServerAddressPool": {
+   "defaultleasetime": {
+    "default": 7200,
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "denyunknown": {
+    "enum": [
+     "enabled",
+     "class"
+    ],
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dnsserver": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "domain": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "domainsearchlist": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "gateway": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ignorebootp": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ignoreclientuids": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "mac_allow": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "mac_deny": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "maxleasetime": {
+    "default": 86400,
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "ntpserver": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "range_from": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "range_to": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "winsserver": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   }
+  },
+  "DHCPServerApply": {
+   "applied": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "boolean",
+    "writeOnly": false
+   }
+  },
+  "DHCPServerBackend": {
+   "dhcpbackend": {
+    "default": "isc",
+    "enum": [
+     "isc",
+     "kea"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "DHCPServerCustomOption": {
+   "number": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "type": {
+    "enum": [
+     "text",
+     "string",
+     "boolean",
+     "unsigned integer 8",
+     "unsigned integer 16",
+     "unsigned integer 32",
+     "signed integer 8",
+     "signed integer 16",
+     "signed integer 32",
+     "ip-address"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "value": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "DHCPServerStaticMapping": {
+   "arp_table_static_entry": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "cid": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "defaultleasetime": {
+    "default": 7200,
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dnsserver": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "domain": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "domainsearchlist": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "gateway": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "hostname": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ipaddr": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "mac": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "maxleasetime": {
+    "default": 86400,
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "ntpserver": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "winsserver": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   }
+  },
+  "DefaultGateway": {
+   "defaultgw4": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "defaultgw6": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "FirewallAlias": {
+   "address": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "detail": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "name": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "type": {
+    "enum": [
+     "host",
+     "network",
+     "port"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "FirewallApply": {
+   "applied": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "pending_subsystems": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "array",
+    "writeOnly": false
+   }
+  },
+  "FirewallRule": {
+   "ackqueue": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "associated_rule_id": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "created_by": {
+    "default": "@unknown IP (API)",
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "created_time": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "defaultqueue": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "destination": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "destination_port": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "direction": {
+    "default": "any",
+    "enum": [
+     "any",
+     "in",
+     "out"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "disabled": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "dnpipe": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dscp": {
+    "enum": [
+     "",
+     "af11",
+     "af12",
+     "af13",
+     "af21",
+     "af22",
+     "af23",
+     "af31",
+     "af32",
+     "af33",
+     "af41",
+     "af42",
+     "af43",
+     "VA",
+     "EF",
+     "cs1",
+     "cs2",
+     "cs3",
+     "cs4",
+     "cs5",
+     "cs6",
+     "cs7",
+     "0x01",
+     "0x02",
+     "0x04"
+    ],
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "floating": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "gateway": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "icmptype": {
+    "default": [
+     "any"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "interface": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "ipprotocol": {
+    "enum": [
+     "inet",
+     "inet6",
+     "inet46"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "log": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "pdnpipe": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "protocol": {
+    "enum": [
+     "tcp",
+     "udp",
+     "tcp/udp",
+     "icmp",
+     "esp",
+     "ah",
+     "gre",
+     "ipv6",
+     "igmp",
+     "pim",
+     "ospf",
+     "carp",
+     "pfsync"
+    ],
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "quick": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "sched": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "source": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "source_port": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "statetype": {
+    "default": "keep state",
+    "enum": [
+     "keep state",
+     "sloppy state",
+     "synproxy state",
+     "none"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "tag": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "tcp_flags_any": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "tcp_flags_out_of": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "tcp_flags_set": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "tracker": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "type": {
+    "enum": [
+     "pass",
+     "block",
+     "reject"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "updated_by": {
+    "default": "@unknown IP (API)",
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "updated_time": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "integer",
+    "writeOnly": false
+   }
+  },
+  "InterfaceApply": {
+   "applied": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "pending_interfaces": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "array",
+    "writeOnly": false
+   }
+  },
+  "InterfaceBridge": {
+   "bridgeif": {
+    "default": "bridge0",
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "members": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   }
+  },
+  "InterfaceGRE": {
+   "add_static_route": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "greif": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "if": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "remote_addr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "tunnel_local_addr": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "tunnel_local_addr6": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "tunnel_remote_addr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "tunnel_remote_addr6": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "tunnel_remote_net": {
+    "default": 32,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "tunnel_remote_net6": {
+    "default": 128,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   }
+  },
+  "InterfaceGroup": {
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ifname": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "members": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   }
+  },
+  "InterfaceLAGG": {
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "failovermaster": {
+    "default": "auto",
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "lacptimeout": {
+    "default": "slow",
+    "enum": [
+     "slow",
+     "fast"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "lagghash": {
+    "default": "l2,l3,l4",
+    "enum": [
+     "l2",
+     "l3",
+     "l4",
+     "l2,l3",
+     "l2,l4",
+     "l3,l4",
+     "l2,l3,l4"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "laggif": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "members": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "proto": {
+    "enum": [
+     "lacp",
+     "failover",
+     "loadbalance",
+     "roundrobin",
+     "none"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "InterfaceVLAN": {
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "if": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "pcp": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "tag": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "vlanif": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "LogSettings": {
+   "auth": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "dhcp": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "disablelocallogging": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "dpinger": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "enableremotelogging": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "filter": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "filterdescriptions": {
+    "enum": [
+     0,
+     1,
+     2
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "format": {
+    "default": "rfc3164",
+    "enum": [
+     "rfc3164",
+     "rfc5424"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "hostapd": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ipprotocol": {
+    "default": "ipv4",
+    "enum": [
+     "ipv4",
+     "ipv6"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "logall": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "logcompressiontype": {
+    "default": "bzip2",
+    "enum": [
+     "bzip2",
+     "gzip",
+     "xz",
+     "zstd",
+     "none"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "logconfigchanges": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "logfilesize": {
+    "default": 512000,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "nentries": {
+    "default": 500,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "nologbogons": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "nologdefaultblock": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "nologdefaultpass": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "nolognginx": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "nologprivatenets": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ntpd": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "portalauth": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ppp": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "rawfilter": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "remoteserver": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "remoteserver2": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "remoteserver3": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "resolver": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "reverseorder": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "rotatecount": {
+    "default": 5,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "routing": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "sourceip": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "system": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "vpn": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   }
+  },
+  "NetworkInterface": {
+   "adv_dhcp_config_advanced": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "adv_dhcp_config_file_override": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "adv_dhcp_config_file_override_path": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "adv_dhcp_option_modifiers": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "adv_dhcp_pt_backoff_cutoff": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "adv_dhcp_pt_initial_interval": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "adv_dhcp_pt_reboot": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "adv_dhcp_pt_retry": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "adv_dhcp_pt_select_timeout": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "adv_dhcp_pt_timeout": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "adv_dhcp_pt_values": {
+    "default": "SavedCfg",
+    "enum": [
+     "SavedCfg"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "adv_dhcp_request_options": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "adv_dhcp_required_options": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "adv_dhcp_send_options": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "alias_address": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "alias_subnet": {
+    "default": 32,
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "blockbogons": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "blockpriv": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dhcphostname": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dhcprejectfrom": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "enable": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "gateway": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "gateway_6rd": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "gatewayv6": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "if": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ipaddr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ipaddrv6": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ipv6usev4iface": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "media": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "mediaopt": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "mss": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "mtu": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "prefix_6rd": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "prefix_6rd_v4plen": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "slaacusev4iface": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "spoofmac": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "subnet": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "subnetv6": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "track6_interface": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "track6_prefix_id_hex": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "typev4": {
+    "enum": [
+     "static",
+     "dhcp",
+     "none"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "typev6": {
+    "enum": [
+     "staticv6",
+     "dhcp6",
+     "slaac",
+     "6rd",
+     "track6",
+     "6to4",
+     "none"
+    ],
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "OpenVPNClientExport": {
+   "advancedoptions": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "binary_data": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "bindmode": {
+    "default": "nobind",
+    "enum": [
+     "nobind",
+     "lport0",
+     "bind"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "blockoutsidedns": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "certref": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "filename": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "legacy": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "p12encryption": {
+    "default": "high",
+    "enum": [
+     "high",
+     "low",
+     "legacy"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "pass": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "pkcs11id": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "pkcs11providers": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "proxyaddr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "proxypass": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "proxyport": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "proxyuser": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "server": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "silent": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "type": {
+    "enum": [
+     "confzip",
+     "conf_yealink_t28",
+     "conf_yealink_t38g",
+     "conf_yealink_t38g2",
+     "conf_snom",
+     "confinline",
+     "confinlinedroid",
+     "confinlineconnect",
+     "confinlinevisc",
+     "inst-Win7",
+     "inst-Win10",
+     "inst-x86-previous",
+     "inst-x64-previous",
+     "inst-x86-current",
+     "inst-x64-current",
+     "visc"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "useaddr": {
+    "default": "serveraddr",
+    "enum": [
+     "serveraddr",
+     "servermagic",
+     "servermagichost",
+     "serverhostname",
+     "other"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "useaddr_hostname": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "usepass": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "usepkcs11": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "useproxy": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "useproxypass": {
+    "enum": [
+     "none",
+     "basic",
+     "ntlm"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "useproxytype": {
+    "default": "http",
+    "enum": [
+     "http",
+     "socks"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "username": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "usetoken": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "verifyservercn": {
+    "default": "auto",
+    "enum": [
+     "auto",
+     "none"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "OpenVPNClientExportConfig": {
+   "advancedoptions": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "bindmode": {
+    "default": "nobind",
+    "enum": [
+     "nobind",
+     "lport0",
+     "bind"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "blockoutsidedns": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "legacy": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "p12encryption": {
+    "default": "high",
+    "enum": [
+     "high",
+     "low",
+     "legacy"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "pass": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "pkcs11id": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "pkcs11providers": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "proxyaddr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "proxypass": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "proxyport": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "proxyuser": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "server": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "silent": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "useaddr": {
+    "default": "serveraddr",
+    "enum": [
+     "serveraddr",
+     "servermagic",
+     "servermagichost",
+     "serverhostname",
+     "other"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "useaddr_hostname": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "usepass": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "usepkcs11": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "useproxy": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "useproxypass": {
+    "enum": [
+     "none",
+     "basic",
+     "ntlm"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "useproxytype": {
+    "default": "http",
+    "enum": [
+     "http",
+     "socks"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "usetoken": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "verifyservercn": {
+    "default": "auto",
+    "enum": [
+     "auto",
+     "none"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "OpenVPNServer": {
+   "allow_compression": {
+    "default": "no",
+    "enum": [
+     "no",
+     "yes",
+     "asym"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "authmode": {
+    "default": [
+     "Local Database"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "caref": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "cert_depth": {
+    "default": 1,
+    "enum": [
+     1,
+     2,
+     3,
+     4,
+     5
+    ],
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "certref": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "client2client": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "connlimit": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "create_gw": {
+    "default": "both",
+    "enum": [
+     "both",
+     "v4only",
+     "v6only"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "custom_options": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "data_ciphers": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "data_ciphers_fallback": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "description": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dev_mode": {
+    "enum": [
+     "tun",
+     "tap"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dh_length": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "digest": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "disable": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "dns_domain": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dns_server1": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dns_server2": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dns_server3": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dns_server4": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "duplicate_cn": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "dynamic_ip": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ecdh_curve": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "gwredir": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "gwredir6": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "inactive_seconds": {
+    "default": 300,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "interface": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "keepalive_interval": {
+    "default": 10,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "keepalive_timeout": {
+    "default": 60,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "local_network": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "local_networkv6": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "local_port": {
+    "default": "1194",
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "maxclients": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "mode": {
+    "enum": [
+     "p2p_tls",
+     "server_tls",
+     "server_user",
+     "server_tls_user"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "netbios_enable": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "netbios_ntype": {
+    "enum": [
+     0,
+     1,
+     2,
+     4,
+     8
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "netbios_scope": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ntp_server1": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ntp_server2": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "passtos": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ping_action": {
+    "default": "ping_restart",
+    "enum": [
+     "ping_restart",
+     "ping_exit"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ping_action_push": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ping_action_seconds": {
+    "default": 60,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "ping_method": {
+    "default": "keepalive",
+    "enum": [
+     "keepalive",
+     "ping"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ping_push": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ping_seconds": {
+    "default": 10,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "protocol": {
+    "enum": [
+     "UDP4",
+     "UDP6",
+     "UDP",
+     "TCP4",
+     "TCP6",
+     "TCP"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "push_blockoutsidedns": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "push_register_dns": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "remote_cert_tls": {
+    "default": true,
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "remote_network": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "remote_networkv6": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "serverbridge_dhcp": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "serverbridge_dhcp_end": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "serverbridge_dhcp_start": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "serverbridge_interface": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "serverbridge_routegateway": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "sndrcvbuf": {
+    "enum": [
+     65536,
+     131072,
+     262144,
+     524288,
+     1048576,
+     2097152
+    ],
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "strictusercn": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "tls": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "tls_type": {
+    "enum": [
+     "auth",
+     "crypt"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "tlsauth_keydir": {
+    "default": "default",
+    "enum": [
+     "default",
+     "0",
+     "1",
+     "2"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "topology": {
+    "default": "subnet",
+    "enum": [
+     "subnet",
+     "net30"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "tunnel_network": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "tunnel_networkv6": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "use_tls": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "username_as_common_name": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "verbosity_level": {
+    "default": 1,
+    "enum": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "vpnid": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "vpnif": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "wins_server1": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "wins_server2": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "Package": {
+   "descr": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "installed_version": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "latest_version": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "name": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "shortname": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "update_available": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "boolean",
+    "writeOnly": false
+   }
+  },
+  "PortForward": {
+   "associated_rule_id": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "created_by": {
+    "default": "@unknown IP (API)",
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "created_time": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "destination": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "destination_port": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "disabled": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "interface": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ipprotocol": {
+    "default": "inet",
+    "enum": [
+     "inet",
+     "inet6",
+     "inet46"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "local_port": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "natreflection": {
+    "enum": [
+     "enable",
+     "disable",
+     "purenat"
+    ],
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "nordr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "nosync": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "protocol": {
+    "enum": [
+     "any",
+     "tcp",
+     "udp",
+     "tcp/udp",
+     "icmp",
+     "esp",
+     "ah",
+     "gre",
+     "ipv6",
+     "igmp",
+     "pim",
+     "ospf"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "source": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "source_port": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "target": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "updated_by": {
+    "default": "@unknown IP (API)",
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "updated_time": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "integer",
+    "writeOnly": false
+   }
+  },
+  "RESTAPIAccessListEntry": {
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "network": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "sched": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "type": {
+    "default": "allow",
+    "enum": [
+     "allow",
+     "deny"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "users": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "weight": {
+    "default": 1,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   }
+  },
+  "RESTAPIKey": {
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "hash": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "hash_algo": {
+    "default": "sha256",
+    "enum": [
+     "sha256",
+     "sha384",
+     "sha512"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "key": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "length_bytes": {
+    "default": 24,
+    "enum": [
+     16,
+     24,
+     32,
+     64
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "username": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "RESTAPISettings": {
+   "allow_development_packages": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "allow_pre_releases": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "allowed_interfaces": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "auth_methods": {
+    "default": [
+     "BasicAuth"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "enabled": {
+    "default": true,
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "expose_sensitive_fields": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ha_sync": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "ha_sync_hosts": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "ha_sync_password": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ha_sync_username": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ha_sync_validate_certs": {
+    "default": true,
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "hateoas": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "jwt_exp": {
+    "default": 3600,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "keep_backup": {
+    "default": true,
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "log_level": {
+    "default": "LOG_WARNING",
+    "enum": [
+     "LOG_DEBUG",
+     "LOG_INFO",
+     "LOG_NOTICE",
+     "LOG_WARNING",
+     "LOG_ERR",
+     "LOG_CRIT",
+     "LOG_ALERT",
+     "LOG_EMERG"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "log_successful_auth": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "login_protection": {
+    "default": true,
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "override_sensitive_fields": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "read_only": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "represent_interfaces_as": {
+    "default": "descr",
+    "enum": [
+     "descr",
+     "id",
+     "if"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "RESTAPISettingsSync": {
+   "sync_data": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "RESTAPIVersion": {
+   "available_versions": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "array",
+    "writeOnly": false
+   },
+   "current_version": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "install_version": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": true
+   },
+   "latest_version": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "latest_version_release_date": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "update_available": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "boolean",
+    "writeOnly": false
+   }
+  },
+  "RoutingApply": {
+   "applied": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "boolean",
+    "writeOnly": false
+   }
+  },
+  "RoutingGateway": {
+   "action_disable": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "alert_interval": {
+    "default": 1000,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "data_payload": {
+    "default": 1,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "disabled": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "dpinger_dont_add_static_route": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "force_down": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "gateway": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "gw_down_kill_states": {
+    "enum": [
+     "",
+     "none",
+     "down"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "interface": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "interval": {
+    "default": 500,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "ipprotocol": {
+    "enum": [
+     "inet",
+     "inet6"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "latencyhigh": {
+    "default": 500,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "latencylow": {
+    "default": 200,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "loss_interval": {
+    "default": 2000,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "losshigh": {
+    "default": 20,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "losslow": {
+    "default": 10,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "monitor": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "monitor_disable": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "name": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "nonlocalgateway": {
+    "default": true,
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "time_period": {
+    "default": 60000,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "weight": {
+    "default": 1,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   }
+  },
+  "RoutingGatewayGroup": {
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ipprotocol": {
+    "default": "unknown",
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "name": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "priorities": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "trigger": {
+    "default": "down",
+    "enum": [
+     "down",
+     "downloss",
+     "downlatency",
+     "downlosslatency"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "RoutingGatewayGroupPriority": {
+   "gateway": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "tier": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "virtual_ip": {
+    "default": "address",
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "SSH": {
+   "enable": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "port": {
+    "default": "22",
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "sshdagentforwarding": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "sshdkeyonly": {
+    "enum": [
+     "enabled",
+     "both"
+    ],
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "SystemDNS": {
+   "dnsallowoverride": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "dnslocalhost": {
+    "enum": [
+     "local",
+     "remote"
+    ],
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "dnsserver": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   }
+  },
+  "SystemHostname": {
+   "domain": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "hostname": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "User": {
+   "authorizedkeys": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "cert": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "disabled": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "expires": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "ipsecpsk": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "name": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "password": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "priv": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "scope": {
+    "default": "user",
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "uid": {
+    "default": 2000,
+    "nullable": true,
+    "readOnly": true,
+    "type": "integer",
+    "writeOnly": false
+   }
+  },
+  "UserGroup": {
+   "description": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "gid": {
+    "default": 2000,
+    "nullable": true,
+    "readOnly": true,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "member": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "name": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "priv": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "scope": {
+    "default": "local",
+    "enum": [
+     "local",
+     "remote",
+     "system"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "WebGUISettings": {
+   "port": {
+    "default": "443",
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "protocol": {
+    "default": "https",
+    "enum": [
+     "http",
+     "https"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "sslcertref": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "WireGuardApply": {
+   "applied": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "boolean",
+    "writeOnly": false
+   }
+  },
+  "WireGuardPeer": {
+   "allowedips": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "enabled": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "endpoint": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "persistentkeepalive": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "port": {
+    "default": "51820",
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "presharedkey": {
+    "nullable": true,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "publickey": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "tun": {
+    "default": "unassigned",
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "WireGuardPeerAllowedIP": {
+   "address": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "mask": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   }
+  },
+  "WireGuardSettings": {
+   "enable": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "hide_peers": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "hide_secrets": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "interface_group": {
+    "default": "all",
+    "enum": [
+     "all",
+     "unassigned",
+     "none"
+    ],
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "keep_conf": {
+    "default": true,
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "resolve_interval": {
+    "default": 300,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "resolve_interval_track": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   }
+  },
+  "WireGuardTunnel": {
+   "addresses": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "array",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "enabled": {
+    "default": true,
+    "nullable": false,
+    "readOnly": false,
+    "type": "boolean",
+    "writeOnly": false
+   },
+   "listenport": {
+    "default": "51820",
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "mtu": {
+    "default": 1420,
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   },
+   "name": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   },
+   "privatekey": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "publickey": {
+    "nullable": true,
+    "readOnly": true,
+    "type": "string",
+    "writeOnly": false
+   }
+  },
+  "WireGuardTunnelAddress": {
+   "address": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "descr": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "string",
+    "writeOnly": false
+   },
+   "mask": {
+    "nullable": false,
+    "readOnly": false,
+    "type": "integer",
+    "writeOnly": false
+   }
+  }
+ },
+ "version": "v2.10.2"
+}
