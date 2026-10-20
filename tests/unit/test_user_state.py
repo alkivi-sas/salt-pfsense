@@ -6,10 +6,11 @@ HASH = "$2y$10$" + "a" * 53
 
 
 def _state(load_module: Loader, user: dict[str, Any], calls: list[Any]) -> Any:
-    salt = {
-        "pfsense_user.get_user": lambda name: (0, dict(user)),
-        "pfsense_user.manage_user": lambda name, attributes: calls.append(attributes) or {"name": name},
-    }
+    def manage_user(name: str, attributes: dict[str, Any]) -> dict[str, str]:
+        calls.append(attributes)
+        return {"name": name}
+
+    salt = {"pfsense_user.get_user": lambda name: (0, dict(user)), "pfsense_user.manage_user": manage_user}
     return load_module("_states/pfsense_user.py", __salt__=salt)
 
 
