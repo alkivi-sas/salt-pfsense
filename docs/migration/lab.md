@@ -1,5 +1,7 @@
 # Lab pfSense (T1.3, T1.4, T1.6, T1.8)
 
+Banc réduit à pfSense Plus 26.07 (amd64 et armv7) : checklist dans [`banc-2607.md`](banc-2607.md).
+
 Le lab sert à :
 - rejouer les scénarios de référence sur les deux backends ;
 - enregistrer des fixtures réelles ;
