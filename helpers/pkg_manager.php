@@ -1,5 +1,9 @@
 <?php
-require_once('pkg-utils.inc');
+// Keep stdout for JSON only: PHP notices/warnings go to stderr
+ini_set("display_errors", "stderr");
+
+require_once("config.inc");
+require_once("pkg-utils.inc");
 
 // Global debug flag - set to true to enable debug output
 $DEBUG = false;
@@ -29,10 +33,9 @@ function list_trains() {
     $trains = [];
     foreach ($repos as $repo) {
         $trains[] = [
-            "id" => $repo['id'],
-            "name" => $repo['name'],
-            "description" => $repo['descr'],
-            "default" => isset($repo['default']) ? (bool)$repo['default'] : false
+            "name" => trim($repo["name"]),
+            "description" => $repo["descr"],
+            "default" => !empty($repo["default"])
         ];
     }
 
@@ -219,74 +222,132 @@ function wait_for_upgrade() {
 }
 
 /**
+ * Read system/pkg_repo_conf_path (config_get_path() only exists on 2.7+)
+ */
+function get_repo_conf_path() {
+    global $config;
+    if (function_exists("config_get_path")) {
+        return config_get_path("system/pkg_repo_conf_path", "");
+    }
+    return $config["system"]["pkg_repo_conf_path"] ?? "";
+}
+
+/**
+ * Write system/pkg_repo_conf_path (config_set_path() only exists on 2.7+)
+ */
+function set_repo_conf_path($value) {
+    global $config;
+    if (function_exists("config_set_path")) {
+        config_set_path("system/pkg_repo_conf_path", $value);
+    } else {
+        $config["system"]["pkg_repo_conf_path"] = $value;
+    }
+}
+
+/**
+ * Check whether $repo is the active train.
+ *
+ * CE ($n > 0): pkg_switch_repo() symlinks /usr/local/etc/pkg/repos/pfSense.conf to the repo .conf,
+ * which is reliable even if the config was polluted by an older version of this helper.
+ * 2.9 / Plus ($n == 0): the link is handled by pfSense-repo-setup, fall back to the config if not a link.
+ *
+ * @param int $n Number of parameters of pkg_switch_repo().
+ */
+function train_is_active($repo, $n) {
+    global $g;
+    $link = "/usr/local/etc/pkg/repos/{$g["product_name"]}.conf";
+    if ($n > 0 || is_link($link)) {
+        $target = is_link($link) ? readlink($link) : false;
+        debug_log("train_is_active() - {$link} -> " . var_export($target, true));
+        return $target === $repo["path"];
+    }
+    $conf = trim((string)get_repo_conf_path());
+    $current = trim((string)pkg_get_repo_name($conf));
+    debug_log("train_is_active() - no symlink, config: {$conf}, current repo: {$current}");
+    return in_array(trim($repo["name"]), [$conf, $current], true);
+}
+
+/**
  * Activate a specific train by its name and update configuration
- * 
+ *
+ * pkg_switch_repo() and the expected pkg_repo_conf_path value depend on the version
+ * (see system_update_settings.php):
+ *   CE <= 2.6:      pkg_switch_repo($path), config = path
+ *   CE 2.7 / 2.8:   pkg_switch_repo($repo_path, $repo_name), config = path
+ *   2.9 / Plus:     pkg_switch_repo(), config = name
+ *
  * @param string $fwbranch Firmware branch (e.g., "24_11").
- * @return bool True if the train was activated, false if it was already active or timed out.
+ * @return bool True if the train is active at the end.
  */
 function activate_train($fwbranch) {
     debug_log("activate_train() called with fwbranch: {$fwbranch}");
-    
+
     $repos = pkg_list_repos();
-    debug_log("activate_train() - Found " . count($repos) . " repositories");
 
     if (!$repos || !is_array($repos)) {
-        echo json_encode(["error" => "No repositories found."]);
+        echo json_encode([
+            "success" => false,
+            "message" => "No repositories found."
+        ]);
         return false;
     }
+    debug_log("activate_train() - Found " . count($repos) . " repositories");
 
-    $current_repo_name = pkg_get_repo_name(config_get_path('system/pkg_repo_conf_path'));
-    debug_log("activate_train() - Current repository name: " . ($current_repo_name ?: "NOT SET"));
-    
     foreach ($repos as $repo) {
-        debug_log("activate_train() - Checking repo: {$repo['name']} (looking for: {$fwbranch})");
-        if ($repo['name'] === $fwbranch) {
-            // Check if the repository is already the default
-            if ($current_repo_name === $repo['name']) {
-                echo json_encode([
-                    "success" => true,
-                    "message" => "Train '{$fwbranch}' is already active."
-                ]);
-                return true; // No action needed
-            }
+        debug_log("activate_train() - Checking repo: {$repo["name"]} (looking for: {$fwbranch})");
+        if (trim($repo["name"]) !== trim($fwbranch)) {
+            continue;
+        }
 
-            // Update configuration to set the desired firmware branch
-            debug_log("activate_train() - Found matching repo: {$repo['name']}");
-            debug_log("activate_train() - Current repo: {$current_repo_name}, Target repo: {$repo['name']}");
-            
-            config_set_path('system/pkg_repo_conf_path', $repo['name']);
-            write_config(gettext("Saved firmware branch setting."));
-            debug_log("activate_train() - Configuration updated, calling pkg_switch_repo()");
-            
-            pkg_switch_repo();
-            debug_log("activate_train() - pkg_switch_repo() completed");
-            
-            // Sleep 1 seconds for process to start
-            debug_log("activate_train() - Sleeping 1s before checking for upgrade processes...");
-            sleep(1);
+        $n = (new ReflectionFunction("pkg_switch_repo"))->getNumberOfParameters();
+        debug_log("activate_train() - pkg_switch_repo() takes {$n} parameter(s), path: {$repo["path"]}");
 
-            // Wait for any background jobs to complete
-            debug_log("activate_train() - Starting wait_for_upgrade()...");
-            if (!wait_for_upgrade()) {
-                echo json_encode([
-                    "success" => false,
-                    "message" => "Timed out waiting for background jobs to finish."
-                ]);
-                return false;
-            }
-
+        if (train_is_active($repo, $n)) {
             echo json_encode([
                 "success" => true,
-                "message" => "Train '{$fwbranch}' activated successfully."
+                "message" => "Train {$fwbranch} is already active."
             ]);
-
             return true;
         }
+
+        set_repo_conf_path($n == 0 ? $repo["name"] : $repo["path"]);
+        write_config(gettext("Saved firmware branch setting."));
+
+        if ($n == 0) {
+            pkg_switch_repo();
+        } elseif ($n == 1) {
+            pkg_switch_repo($repo["path"]);
+        } else {
+            pkg_switch_repo(dirname($repo["path"]), $repo["name"]);
+        }
+        debug_log("activate_train() - pkg_switch_repo() completed");
+
+        // Sleep 1 seconds for process to start
+        sleep(1);
+
+        // rc.update_pkg_metadata keeps running in background: a timeout is not a failure if the switch happened
+        debug_log("activate_train() - Starting wait_for_upgrade()...");
+        $finished = wait_for_upgrade();
+        $active = train_is_active($repo, $n);
+
+        if (!$active) {
+            $message = "Train {$fwbranch} is not active after switching repository.";
+        } elseif ($finished) {
+            $message = "Train {$fwbranch} activated successfully.";
+        } else {
+            $message = "Train {$fwbranch} activated, metadata refresh still running.";
+        }
+        echo json_encode([
+            "success" => $active,
+            "message" => $message
+        ]);
+
+        return $active;
     }
 
     echo json_encode([
         "success" => false,
-        "message" => "Firmware branch '{$fwbranch}' not found."
+        "message" => "Firmware branch {$fwbranch} not found."
     ]);
 
     return false;
@@ -294,10 +355,17 @@ function activate_train($fwbranch) {
 
 $options = getopt("", ["list", "activate:"]);
 
-if (isset($options['list'])) {
+if (isset($options["list"])) {
     list_trains();
-} elseif (isset($options['activate'])) {
-    activate_train($options['activate']);
+} elseif (isset($options["activate"])) {
+    try {
+        activate_train($options["activate"]);
+    } catch (Throwable $e) {
+        echo json_encode([
+            "success" => false,
+            "message" => $e->getMessage()
+        ]);
+    }
 } else {
     echo json_encode([
         "usage" => [
